@@ -55,31 +55,9 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 
-# Install dependencies first
-print_status "Installing MongoDB..."
-helm upgrade --install mongodb bitnami/mongodb \
-  --namespace $NAMESPACE \
-  --values values-local.yaml \
-  --set mongodb.enabled=true \
-  --wait
-
-print_status "Installing Redis..."
-helm upgrade --install redis bitnami/redis \
-  --namespace $NAMESPACE \
-  --values values-local.yaml \
-  --set redis.enabled=true \
-  --wait
-
-print_status "Installing Nginx Ingress Controller..."
-helm upgrade --install nginx-ingress ingress-nginx/ingress-nginx \
-  --namespace $NAMESPACE \
-  --values values-local.yaml \
-  --set nginx-ingress.enabled=true \
-  --wait
-
-# Deploy the main StackAI application
-print_status "Deploying StackAI application..."
-helm upgrade --install stackai-local . \
+# Deploy the main StackAI application (includes all dependencies)
+print_status "Deploying StackAI application with all dependencies..."
+helm upgrade --install stackai-local ../../helm \
   --namespace $NAMESPACE \
   --values values-local.yaml \
   --wait

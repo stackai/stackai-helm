@@ -5,7 +5,8 @@
 # Global configuration for local testing
 global:
   imageRegistry: "" # Empty for public images, will be overridden for Azure images
-  imagePullSecrets: [] # No secrets needed for public images
+  imagePullSecrets:
+    - name: acr-secret # ACR secret for Azure images (stackend, stackweb, celery)
   storageClass: "standard" # Use standard storage class for local testing
   domain: "localhost"
   tls:
@@ -158,7 +159,7 @@ stackweb:
 celery:
   enabled: true
   image:
-    registry: "stackai.azurecr.io" # Azure registry for celery
+    registry: "stackai.azurecr.io" # Azure registry for celery (same as stackend)
     repository: stackai/stackend-backend
     tag: latest
     pullPolicy: IfNotPresent
@@ -187,27 +188,19 @@ celery:
       files:
         # Additional celery configuration
 
-# Infrastructure Components - Using public images
+# Infrastructure Components - Using Bitnami charts with public images
 mongodb:
   enabled: true
-  image:
-    registry: docker.io
-    repository: bitnami/mongodb
-    tag: "7.0.8"
-    pullPolicy: IfNotPresent
-
   auth:
     enabled: true
     rootPassword: "mongodb123"
     username: "stackai"
     password: "stackai123"
     database: "stackai"
-
   persistence:
     enabled: true
     storageClass: "standard"
     size: 10Gi # Smaller storage for local testing
-
   resources:
     requests:
       cpu: "0.5"
@@ -218,22 +211,14 @@ mongodb:
 
 redis:
   enabled: true
-  image:
-    registry: docker.io
-    repository: bitnami/redis
-    tag: "7.2.3"
-    pullPolicy: IfNotPresent
-
   auth:
     enabled: true
     password: "redis123"
-
   master:
     persistence:
       enabled: true
       storageClass: "standard"
       size: 5Gi # Smaller storage for local testing
-
   resources:
     requests:
       cpu: "0.25"
@@ -245,19 +230,10 @@ redis:
 # Supabase Configuration - Using public images
 supabase:
   enabled: true
-  image:
-    registry: docker.io
-    repository: supabase/supabase
-    tag: "24.03.03"
-    pullPolicy: IfNotPresent
-
   db:
     enabled: true
     image:
-      registry: docker.io
-      repository: supabase/postgres
       tag: "15.1.0.147"
-      pullPolicy: IfNotPresent
     persistence:
       enabled: true
       storageClass: "standard"
@@ -265,10 +241,7 @@ supabase:
 
   studio:
     image:
-      registry: docker.io
-      repository: supabase/studio
       tag: "20240326-5e5586d"
-      pullPolicy: IfNotPresent
     environment:
       STUDIO_DEFAULT_ORGANIZATION: "My Organization"
       STUDIO_DEFAULT_PROJECT: "My Project"
@@ -278,10 +251,7 @@ supabase:
 
   auth:
     image:
-      registry: docker.io
-      repository: supabase/gotrue
       tag: "v2.145.0"
-      pullPolicy: IfNotPresent
     environment:
       API_EXTERNAL_URL: "http://localhost"
       SUPABASE_URL: "http://localhost"
@@ -291,31 +261,19 @@ supabase:
 
   rest:
     image:
-      registry: docker.io
-      repository: postgrest/postgrest
       tag: "v12.0.1"
-      pullPolicy: IfNotPresent
 
   realtime:
     image:
-      registry: docker.io
-      repository: supabase/realtime
       tag: "v2.27.5"
-      pullPolicy: IfNotPresent
 
   meta:
     image:
-      registry: docker.io
-      repository: supabase/postgres-meta
       tag: "v0.80.0"
-      pullPolicy: IfNotPresent
 
   storage:
     image:
-      registry: docker.io
-      repository: supabase/storage-api
       tag: "v0.46.4"
-      pullPolicy: IfNotPresent
     persistence:
       enabled: true
       storageClass: "standard"
@@ -323,10 +281,7 @@ supabase:
 
   imgproxy:
     image:
-      registry: docker.io
-      repository: darthsim/imgproxy
       tag: "v3.8.0"
-      pullPolicy: IfNotPresent
     persistence:
       enabled: true
       storageClass: "standard"
@@ -334,33 +289,22 @@ supabase:
 
   kong:
     image:
-      registry: docker.io
-      repository: kong
+      repository: "kong"
       tag: "2.8.1"
-      pullPolicy: IfNotPresent
 
   analytics:
     enabled: true
     image:
-      registry: docker.io
-      repository: supabase/analytics
       tag: "1.4.0"
-      pullPolicy: IfNotPresent
 
   vector:
     enabled: false
     image:
-      registry: docker.io
-      repository: timberio/vector
       tag: "0.34.0-alpine"
-      pullPolicy: IfNotPresent
 
   functions:
     image:
-      registry: docker.io
-      repository: supabase/edge-runtime
       tag: "v1.41.2"
-      pullPolicy: IfNotPresent
 
   secrets:
     jwt:
@@ -376,10 +320,7 @@ supabase:
 weaviate:
   enabled: true
   image:
-    registry: docker.io
-    repository: semitechnologies/weaviate
-    tag: "1.22.4"
-    pullPolicy: IfNotPresent
+    tag: "17.5.0"
 
   persistence:
     enabled: true
@@ -398,11 +339,6 @@ weaviate:
 nginx-ingress:
   enabled: true
   controller:
-    image:
-      registry: docker.io
-      repository: k8s.gcr.io/ingress-nginx/controller
-      tag: "v1.8.1"
-      pullPolicy: IfNotPresent
     service:
       type: NodePort # Use NodePort for local testing
       nodePorts:
@@ -434,7 +370,7 @@ configurationSetup:
 
   secrets:
     acrSecret:
-      enabled: false # No ACR secret needed for local testing
+      enabled: true # Enable ACR secret for Azure images
     stackendLicence:
       enabled: true
 
