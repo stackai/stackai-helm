@@ -1,0 +1,457 @@
+{{- if .Values.supabase.enabled }}
+# Supabase Database
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-db
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-db
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:{{ .Values.supabase.db.image.tag }}
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.supabase.secrets.db.secretRef }}
+                  key: password
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_DB
+              value: "postgres"
+          ports:
+            - containerPort: 5432
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 3
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          resources:
+            {{- toYaml .Values.supabase.db.resources | nindent 12 }}
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: {{ include "stackai-byoc.fullname" . }}-supabase-db-pvc
+
+# Supabase Studio
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-studio
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-studio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-studio
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-studio
+    spec:
+      containers:
+        - name: studio
+          image: supabase/studio:{{ .Values.supabase.studio.image.tag }}
+          env:
+            {{- range $key, $value := .Values.supabase.studio.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /api/profile
+              port: 3000
+            initialDelaySeconds: 3
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+# Supabase Auth
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-auth
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-auth
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-auth
+    spec:
+      containers:
+        - name: auth
+          image: supabase/gotrue:{{ .Values.supabase.auth.image.tag }}
+          env:
+            {{- range $key, $value := .Values.supabase.auth.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 9999
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+# Supabase REST API
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-rest
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-rest
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-rest
+    spec:
+      containers:
+        - name: rest
+          image: postgrest/postgrest:{{ .Values.supabase.rest.image.tag }}
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+# Supabase Realtime
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-realtime
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-realtime
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-realtime
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-realtime
+    spec:
+      containers:
+        - name: realtime
+          image: supabase/realtime:{{ .Values.supabase.realtime.image.tag }}
+          ports:
+            - containerPort: 4000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 3
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+# Supabase Meta
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-meta
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-meta
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-meta
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-meta
+    spec:
+      containers:
+        - name: meta
+          image: supabase/postgres-meta:{{ .Values.supabase.meta.image.tag }}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+# Supabase Storage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-storage
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-storage
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-storage
+    spec:
+      containers:
+        - name: storage
+          image: supabase/storage-api:{{ .Values.supabase.storage.image.tag }}
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 5000
+            initialDelaySeconds: 3
+          volumeMounts:
+            - name: storage-data
+              mountPath: /var/lib/storage
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+      volumes:
+        - name: storage-data
+          persistentVolumeClaim:
+            claimName: {{ include "stackai-byoc.fullname" . }}-supabase-storage-pvc
+
+# Supabase Imgproxy
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-imgproxy
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-imgproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-imgproxy
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-imgproxy
+    spec:
+      containers:
+        - name: imgproxy
+          image: darthsim/imgproxy:{{ .Values.supabase.imgproxy.image.tag }}
+          env:
+            {{- range $key, $value := .Values.supabase.imgproxy.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            exec:
+              command:
+                - imgproxy
+                - health
+            initialDelaySeconds: 3
+          volumeMounts:
+            - name: imgproxy-cache
+              mountPath: /tmp/imgproxy
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+      volumes:
+        - name: imgproxy-cache
+          persistentVolumeClaim:
+            claimName: {{ include "stackai-byoc.fullname" . }}-supabase-imgproxy-pvc
+
+# Supabase Kong
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-kong
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-kong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-kong
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-kong
+    spec:
+      containers:
+        - name: kong
+          image: {{ .Values.supabase.kong.image.repository }}:{{ .Values.supabase.kong.image.tag }}
+          env:
+            {{- range $key, $value := .Values.supabase.kong.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 8000
+            - containerPort: 8443
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+# Supabase Analytics
+{{- if .Values.supabase.analytics.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-analytics
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-analytics
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-analytics
+    spec:
+      containers:
+        - name: analytics
+          image: supabase/analytics:{{ .Values.supabase.analytics.image.tag }}
+          ports:
+            - containerPort: 4000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 3
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+{{- end }}
+
+# Supabase Functions
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-functions
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-functions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: supabase-functions
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: supabase-functions
+    spec:
+      containers:
+        - name: functions
+          image: supabase/edge-runtime:{{ .Values.supabase.functions.image.tag }}
+          ports:
+            - containerPort: 9000
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+{{- end }}

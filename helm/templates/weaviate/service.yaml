@@ -1,0 +1,23 @@
+{{- if .Values.weaviate.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-weaviate
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: weaviate
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: weaviate
+{{- end }}

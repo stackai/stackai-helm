@@ -1,0 +1,52 @@
+{{- if .Values.supabase.enabled }}
+# Supabase PVC
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-db-pvc
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-db
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.global.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.supabase.db.persistence.size}}
+
+# Supabase Storage PVC
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-storage-pvc
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.global.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.supabase.storage.persistence.size}}
+
+# Supabase Imgproxy PVC
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-imgproxy-pvc
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-imgproxy
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.global.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.supabase.imgproxy.persistence.size}}
+{{- end }}

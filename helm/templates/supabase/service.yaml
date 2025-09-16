@@ -1,0 +1,233 @@
+{{- if .Values.supabase.enabled }}
+
+# Supabase Database Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-db
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-db
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-db
+
+# Supabase Studio Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-studio
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-studio
+spec:
+  type: ClusterIP
+  ports:
+     - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-studio
+
+# Supabase Auth Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-auth
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-auth
+spec:
+  type: ClusterIP
+  ports:
+     - port: 9999
+      targetPort: 9999
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-auth
+
+# Supabase Rest Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-rest
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-rest
+spec:
+  type: ClusterIP
+  ports:
+     - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-rest
+
+# Supabase Realtime Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-realtime
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-realtime
+spec:
+  type: ClusterIP
+  ports:
+     - port: 4000
+      targetPort: 4000
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-realtime
+
+# Supabase Meta Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-meta
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-meta
+spec:
+  type: ClusterIP
+  ports:
+     - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-meta
+
+# Supabase storage Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-storage
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-storage
+spec:
+  type: ClusterIP
+  ports:
+     - port: 5000
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-storage
+
+# Supabase Imgproxy Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-imgproxy
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-imgproxy
+spec:
+  type: ClusterIP
+  ports:
+     - port: 5001
+      targetPort: 5001
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-imgproxy
+
+# Supabase Kong Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-kong
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-kong
+spec:
+  type: ClusterIP
+  ports:
+     - port: 8000
+      targetPort: 8000
+      protocol: TCP
+     - port: 8443
+      targetPort: 8443
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-kong
+
+# Supabase Analytics Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-analytics
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-analytics
+spec:
+  type: ClusterIP
+  ports:
+     - port: 4000
+      targetPort: 4000
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-analytics
+
+# Supabase Functions Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-functions
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-functions
+spec:
+  type: ClusterIP
+  ports:
+     - port: 9000
+      targetPort: 9000
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-functions
+
+# Supabase Vector Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-vector
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-vector
+spec:
+  type: ClusterIP
+  ports:
+     - port: 9001
+      targetPort: 9001
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: supabase-vector
+{{- end }}

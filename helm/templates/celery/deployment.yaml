@@ -1,0 +1,54 @@
+{{- if .Values.celery.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-celery
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: celery
+spec:
+  replicas: {{ .Values.celery.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: celery
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: celery
+    spec:
+      {{- with .Values.azure.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.azure.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: celery
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.celery.image.repository }}:{{ .Values.celery.image.tag }}"
+          imagePullPolicy: {{ .Values.celery.image.pullPolicy }}
+          command: ["celery", "-A", "apps", "worker", "--loglevel=info"]
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.celery.env.configMapRef }}
+          volumeMounts:
+            {{- range .Values.celery.configMaps }}
+            - name: {{ .name }}
+              mountPath: /app/src/apps/config/{{ .name }}
+              readOnly: true
+            {{- end }}
+          resources:
+            {{- toYaml .Values.celery.resources | nindent 12 }}
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+      restartPolicy: Always
+      volumes:
+        {{- range .Values.celery.configMaps }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .name }}
+        {{- end }}
+{{- end }}
