@@ -6,7 +6,7 @@ kind: ConfigMap
 metadata:
   name: {{ .name }}
   labels:
-    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    {{- include "stackai-byoc.labels" $ | nindent 4 }}
     component: stackend
 data:
   {{- range $key, $value := .files }}

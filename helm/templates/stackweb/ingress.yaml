@@ -28,7 +28,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                  name: {{ include "stackai-byoc.fullname" $ }}-stackweb
+                name: {{ include "stackai-byoc.fullname" $ }}-stackweb
                 port:
                   number: {{ $.Values.stackweb.service.ports.web }}
           {{- end }}

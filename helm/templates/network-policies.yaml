@@ -1,0 +1,66 @@
+{{- if .Values.networkPolicies.enabled }}
+# Network Policy for Nginx Ingress
+{{- if .Values.networkPolicies.nginxIngress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-nginx-ingress-network-policy
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: nginx-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: nginx-ingress
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+  egress:
+  - {} # Allow all egress traffic
+{{- end }}
+
+# Network Policy for StackAI Components
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-stackai-components-network-policy
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: stackai
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "stackai-byoc.name" . }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: nginx-ingress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+  - to: [] # Allow external traffic for API calls
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+{{- end }}

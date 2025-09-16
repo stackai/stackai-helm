@@ -1,0 +1,6 @@
+owner: stackai
+git-repo: stackai-helm
+package-path: .cr-release-packages
+index-path: index.yaml
+pages-branch: gh-pages
+charts-repo: https://stackai.github.io/stackai-helm/

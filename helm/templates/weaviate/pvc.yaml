@@ -12,5 +12,5 @@ spec:
   storageClassName: {{ .Values.global.storageClass }}
   resources:
     requests:
-      storage: {{ .Values.weaviate.persistence.size}}
+      storage: {{ .Values.weaviate.persistence.size }}
 {{- end }}

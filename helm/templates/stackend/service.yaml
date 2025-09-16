@@ -7,15 +7,15 @@ metadata:
     {{- include "stackai-byoc.labels" . | nindent 4 }}
     component: stackend
 spec:
-  type: {{.Values.stackend.service.type}}
+  type: {{ .Values.stackend.service.type }}
   ports:
-      - name: api
-        port: {{.Values.stackend.service.ports.api}}
-        targetPort: {{.Values.stackend.service.ports.api}}
-        protocol: TCP
-      - name: debug
-        port: {{.Values.stackend.service.ports.debug}}
-        targetPort: {{.Values.stackend.service.ports.debug}}
+    - name: api
+      port: {{ .Values.stackend.service.ports.api }}
+      targetPort: {{ .Values.stackend.service.ports.api }}
+      protocol: TCP
+    - name: debug
+      port: {{ .Values.stackend.service.ports.debug }}
+      targetPort: {{ .Values.stackend.service.ports.debug }}
         protocol: TCP
   selector:
     {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}

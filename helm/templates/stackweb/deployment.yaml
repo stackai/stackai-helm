@@ -30,7 +30,7 @@ spec:
       {{- end }}
       containers:
         - name: stackweb
-          image: "{{ .Values.global.imageRegistry }}/{{ .Values.stackweb.image.repository }}:{{ .Values.stackweb.image.tag }}"
+          image: "{{ if .Values.stackweb.image.registry }}{{ .Values.stackweb.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}{{ .Values.stackweb.image.repository }}:{{ .Values.stackweb.image.tag }}"
           imagePullPolicy: {{ .Values.stackweb.image.pullPolicy }}
           command: {{ .Values.stackweb.command }}
           ports:

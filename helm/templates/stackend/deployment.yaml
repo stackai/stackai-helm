@@ -32,7 +32,7 @@ spec:
       {{- end }}
       containers:
         - name: stackend
-          image: "{{ .Values.global.imageRegistry }}/{{ .Values.stackend.image.repository }}:{{ .Values.stackend.image.tag }}"
+          image: "{{ if .Values.stackend.image.registry }}{{ .Values.stackend.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}{{ .Values.stackend.image.repository }}:{{ .Values.stackend.image.tag }}"
           imagePullPolicy: {{ .Values.stackend.image.pullPolicy }}
           ports:
             - name: api

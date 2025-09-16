@@ -1,0 +1,48 @@
+{{- if and .Values.configurationSetup.enabled .Values.configurationSetup.migrationJob.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-migration-job
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: migration
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: migration
+    spec:
+      {{- with .Values.azure.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.azure.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: migration
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.configurationSetup.migrationJob.image.repository }}:{{ .Values.configurationSetup.migrationJob.image.tag }}"
+          command: ["python", "manage.py", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: stackend--env
+          env:
+            - name: STACKAI_LICENCE
+              valueFrom:
+                secretKeyRef:
+                  name: stackend-licence-secret
+                  key: licence
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+      restartPolicy: Never
+  backoffLimit: 3
+{{- end }}

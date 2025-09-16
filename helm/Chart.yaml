@@ -17,17 +17,17 @@ keywords:
   - keyvault
 home: https://stackai.com
 sources:
-  - https://github.com/stackai/stackai-byoc-poc
+  - https://github.com/stackai/stackai-helm
 maintainers:
   - name: StackAI
     email: support@stackai.com
 dependencies:
   - name: mongodb
-    version: 17.0.0
+    version: 16.5.45
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
   - name: redis
-    version: 23.0.2
+    version: 22.0.7
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
   - name: ingress-nginx

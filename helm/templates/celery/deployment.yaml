@@ -28,7 +28,7 @@ spec:
       {{- end }}
       containers:
         - name: celery
-          image: "{{ .Values.global.imageRegistry }}/{{ .Values.celery.image.repository }}:{{ .Values.celery.image.tag }}"
+          image: "{{ if .Values.celery.image.registry }}{{ .Values.celery.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}{{ .Values.celery.image.repository }}:{{ .Values.celery.image.tag }}"
           imagePullPolicy: {{ .Values.celery.image.pullPolicy }}
           command: ["celery", "-A", "apps", "worker", "--loglevel=info"]
           envFrom:

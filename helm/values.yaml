@@ -1,1 +1,810 @@
-## TODO: Configure the Celery
+# Global configuration
+global:
+  ## Global Docker image registry
+  ## @default stackai.azurecr.io
+  imageRegistry: "stackai.azurecr.io"
+  ## Global Docker image pull secrets
+  ## @default [{"name": "acr-secret"}]
+  imagePullSecrets:
+    - name: acr-secret
+  ## Global storage class for dynamic provisioning
+  ## @default managed-csi-premium
+  storageClass: "managed-csi-premium"
+  ## Global domain name for ingress
+  ## @default ""
+  domain: ""
+  ## Global TLS configuration
+  tls:
+    ## Enable TLS
+    ## @default false
+    enabled: false
+    ## TLS secret name
+    ## @default ""
+    secretName: ""
+
+# Azure-specific configuration
+azure:
+  ## Azure resource group name
+  ## @default ""
+  resourceGroup: ""
+  ## Azure subscription ID
+  ## @default ""
+  subscriptionId: ""
+  ## Azure tenant ID
+  ## @default ""
+  tenantId: ""
+  ## Azure Key Vault name
+  ## @default ""
+  keyVaultName: ""
+  ## Azure Container Registry name
+  ## @default stackai.azurecr.io
+  acrName: "stackai.azurecr.io"
+  ## Node selector for Azure-specific workloads
+  nodeSelector:
+    ## Node pool selector
+    ## @default memory-optimized
+    nodepool: memory-optimized
+  ## Tolerations for Azure-specific workloads
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: memory-intensive
+      effect: NoSchedule
+
+# StackAI Core Components
+stackend:
+  ## Enable StackAI backend service
+  ## @default true
+  enabled: true
+  ## StackAI backend image configuration
+  image:
+    ## Image repository
+    ## @default stackai/stackend-backend
+    repository: stackai/stackend-backend
+    ## Image tag
+    ## @default latest
+    tag: latest
+    ## Image pull policy
+    ## @default IfNotPresent
+    pullPolicy: IfNotPresent
+
+  ## Number of replicas
+  ## @default 1
+  replicaCount: 1
+
+  ## Service configuration
+  service:
+    ## Service type
+    ## @default ClusterIP
+    type: ClusterIP
+    ## Service ports
+    ports:
+      ## API port
+      ## @default 8000
+      api: 8000
+      ## Debug port
+      ## @default 8888
+      debug: 8888
+
+  ## Resource requests and limits
+  resources:
+    ## Resource requests
+    requests:
+      ## CPU request
+      ## @default "6"
+      cpu: "6"
+      ## Memory request
+      ## @default "16Gi"
+      memory: "16Gi"
+    ## Resource limits
+    limits:
+      ## CPU limit
+      ## @default "7"
+      cpu: "7"
+      ## Memory limit
+      ## @default "20Gi"
+      memory: "20Gi"
+
+  ## Environment configuration
+  env:
+    ## Environment variables will be populated from configmaps
+    ## ConfigMap reference for environment variables
+    ## @default "stackend--env"
+    configMapRef: "stackend--env"
+
+  ## ConfigMaps for StackAI backend
+  configMaps:
+    - name: stackend-cm0
+      files:
+        ## LLM configuration file
+        ## @default "# LLM Configuration\n[providers]\n# Add your LLM provider configurations here"
+        llm_config.toml: |
+          # LLM Configuration
+          [providers]
+          # Add your LLM provider configurations here
+    - name: stackend-cm1
+      files:
+        ## Local LLM configuration file
+        ## @default "# Local LLM Configuration\n[local_models]\n# Add local model configurations here"
+        llm_local_config.toml: |
+          # Local LLM Configuration
+          [local_models]
+          # Add local model configurations here
+    - name: stackend-cm2
+      files:
+        ## Embeddings configuration file
+        ## @default "# Embeddings Configuration\n[embeddings]\n# Add embeddings configurations here"
+        embeddings_config.toml: |
+          # Embeddings Configuration
+          [embeddings]
+          # Add embeddings configurations here
+
+  ## Secrets for StackAI backend
+  secrets:
+    - name: stackend-licence-secret
+      data:
+        ## StackAI licence key (will be populated from Azure Key Vault)
+        ## @default ""
+        licence: "" # Will be populated from Azure Key Vault
+
+  ## Ingress configuration for StackAI backend
+  ingress:
+    ## Enable ingress
+    ## @default true
+    enabled: true
+    ## Ingress class name
+    ## @default nginx
+    className: nginx
+    ## Ingress annotations
+    annotations:
+      ## Proxy body size
+      ## @default "100m"
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+      ## Proxy read timeout
+      ## @default "600"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      ## Proxy send timeout
+      ## @default "600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+      ## Enable CORS
+      ## @default "true"
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      ## CORS allow origin
+      ## @default "*"
+      nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+      ## CORS allow methods
+      ## @default "GET, POST, PUT, DELETE, OPTIONS"
+      nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+      ## CORS allow headers
+      ## @default "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+      nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    ## Ingress hosts configuration
+    hosts:
+      - host: stackai.example.com
+        paths:
+          - path: /users
+            pathType: Prefix
+          - path: /organizations
+            pathType: Prefix
+          - path: /roles
+            pathType: Prefix
+          - path: /onboarding
+            pathType: Prefix
+          - path: /projects
+            pathType: Prefix
+          - path: /folders
+            pathType: Prefix
+          - path: /connections
+            pathType: Prefix
+          - path: /config
+            pathType: Prefix
+          - path: /knowledge_bases
+            pathType: Prefix
+          - path: /notifications
+            pathType: Prefix
+          - path: /profiles
+            pathType: Prefix
+          - path: /agent-builder
+            pathType: Prefix
+
+stackweb:
+  ## Enable StackAI web frontend
+  ## @default true
+  enabled: true
+  ## StackAI web image configuration
+  image:
+    ## Image repository
+    ## @default stackai/stackweb
+    repository: stackai/stackweb
+    ## Image tag
+    ## @default latest
+    tag: latest
+    ## Image pull policy
+    ## @default IfNotPresent
+    pullPolicy: IfNotPresent
+
+  ## Number of replicas
+  ## @default 1
+  replicaCount: 1
+
+  ## Service configuration
+  service:
+    ## Service type
+    ## @default ClusterIP
+    type: ClusterIP
+    ## Service ports
+    ports:
+      ## Web port
+      ## @default 3000
+      web: 3000
+
+  ## Resource requests and limits
+  resources:
+    ## Resource requests
+    requests:
+      ## CPU request
+      ## @default "6"
+      cpu: "6"
+      ## Memory request
+      ## @default "16Gi"
+      memory: "16Gi"
+    ## Resource limits
+    limits:
+      ## CPU limit
+      ## @default "7"
+      cpu: "7"
+      ## Memory limit
+      ## @default "20Gi"
+      memory: "20Gi"
+
+  ## Environment configuration
+  env:
+    ## ConfigMap reference for environment variables
+    ## @default "stackweb--env"
+    configMapRef: "stackweb--env"
+
+  ## Command to run
+  ## @default ["/bin/sh", "-c", "npm run dev"]
+  command: ["/bin/sh", "-c", "npm run dev"]
+
+  ## Ingress configuration for StackAI web
+  ingress:
+    ## Enable ingress
+    ## @default true
+    enabled: true
+    ## Ingress class name
+    ## @default nginx
+    className: nginx
+    ## Ingress annotations
+    annotations:
+      ## Proxy body size
+      ## @default "100m"
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+      ## Proxy read timeout
+      ## @default "600"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      ## Proxy send timeout
+      ## @default "600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    ## Ingress hosts configuration
+    hosts:
+      - host: stackai.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+
+celery:
+  ## Enable Celery worker
+  ## @default true
+  enabled: true
+  ## Celery worker image configuration
+  image:
+    ## Image repository
+    ## @default stackai/stackend-backend
+    repository: stackai/stackend-backend
+    ## Image tag
+    ## @default latest
+    tag: latest
+    ## Image pull policy
+    ## @default IfNotPresent
+    pullPolicy: IfNotPresent
+
+  ## Number of replicas
+  ## @default 1
+  replicaCount: 1
+
+  ## Resource requests and limits
+  resources:
+    ## Resource requests
+    requests:
+      ## CPU request
+      ## @default "2"
+      cpu: "2"
+      ## Memory request
+      ## @default "4Gi"
+      memory: "4Gi"
+    ## Resource limits
+    limits:
+      ## CPU limit
+      ## @default "4"
+      cpu: "4"
+      ## Memory limit
+      ## @default "8Gi"
+      memory: "8Gi"
+
+  ## Environment configuration
+  env:
+    ## ConfigMap reference for environment variables
+    ## @default "stackend--env"
+    configMapRef: "stackend--env"
+
+  ## ConfigMaps for Celery worker
+  configMaps:
+    - name: celery-worker-cm0
+      files:
+        ## Celery worker configuration files
+        ## @default "# Celery worker configuration files"
+        # Celery worker configuration files
+    - name: celery-worker-cm1
+      files:
+        ## Additional celery configuration
+        ## @default "# Additional celery configuration"
+        # Additional celery configuration
+    - name: celery-worker-cm2
+      files:
+        ## Additional celery configuration
+        ## @default "# Additional celery configuration"
+        # Additional celery configuration
+
+# Infrastructure Components
+mongodb:
+  ## Enable MongoDB
+  ## @default true
+  enabled: true
+  ## MongoDB authentication configuration
+  auth:
+    ## Enable authentication
+    ## @default true
+    enabled: true
+    ## Root password
+    ## @default ""
+    rootPassword: ""
+    ## Username
+    ## @default "stackai"
+    username: "stackai"
+    ## Password
+    ## @default ""
+    password: ""
+    ## Database name
+    ## @default "stackai"
+    database: "stackai"
+
+  ## MongoDB persistence configuration
+  persistence:
+    ## Enable persistence
+    ## @default true
+    enabled: true
+    ## Storage class
+    ## @default "managed-csi-premium"
+    storageClass: "managed-csi-premium"
+    ## Storage size
+    ## @default 20Gi
+    size: 20Gi
+
+  ## Resource requests and limits
+  resources:
+    ## Resource requests
+    requests:
+      ## CPU request
+      ## @default "1"
+      cpu: "1"
+      ## Memory request
+      ## @default "2Gi"
+      memory: "2Gi"
+    ## Resource limits
+    limits:
+      ## CPU limit
+      ## @default "2"
+      cpu: "2"
+      ## Memory limit
+      ## @default "4Gi"
+      memory: "4Gi"
+
+redis:
+  ## Enable Redis
+  ## @default true
+  enabled: true
+  ## Redis authentication configuration
+  auth:
+    ## Enable authentication
+    ## @default true
+    enabled: true
+    ## Password
+    ## @default ""
+    password: ""
+
+  ## Redis master configuration
+  master:
+    ## Master persistence configuration
+    persistence:
+      ## Enable persistence
+      ## @default true
+      enabled: true
+      ## Storage class
+      ## @default "managed-csi-premium"
+      storageClass: "managed-csi-premium"
+      ## Storage size
+      ## @default 10Gi
+      size: 10Gi
+
+  ## Resource requests and limits
+  resources:
+    ## Resource requests
+    requests:
+      ## CPU request
+      ## @default "0.5"
+      cpu: "0.5"
+      ## Memory request
+      ## @default "1Gi"
+      memory: "1Gi"
+    ## Resource limits
+    limits:
+      ## CPU limit
+      ## @default "1"
+      cpu: "1"
+      ## Memory limit
+      ## @default "2Gi"
+      memory: "2Gi"
+
+# Supabase Configuration
+supabase:
+  ## Enable Supabase
+  ## @default true
+  enabled: true
+  ## Supabase image configuration
+  image:
+    ## Image tag
+    ## @default "24.03.03"
+    tag: "24.03.03"
+
+  ## Supabase database configuration
+  db:
+    ## Enable database
+    ## @default true
+    enabled: true
+    ## Database image configuration
+    image:
+      ## Database image tag
+      ## @default "15.1.0.147"
+      tag: "15.1.0.147"
+    ## Database persistence configuration
+    persistence:
+      ## Enable persistence
+      ## @default true
+      enabled: true
+      ## Storage class
+      ## @default "managed-csi-premium"
+      storageClass: "managed-csi-premium"
+      ## Storage size
+      ## @default 20Gi
+      size: 20Gi
+
+  ## Supabase Studio configuration
+  studio:
+    ## Studio image configuration
+    image:
+      ## Studio image tag
+      ## @default "20240326-5e5586d"
+      tag: "20240326-5e5586d"
+    ## Studio environment variables
+    environment:
+      ## Default organization
+      ## @default "My Organization"
+      STUDIO_DEFAULT_ORGANIZATION: "My Organization"
+      ## Default project
+      ## @default "My Project"
+      STUDIO_DEFAULT_PROJECT: "My Project"
+      ## Public URL
+      ## @default ""
+      SUPABASE_PUBLIC_URL: ""
+      ## Supabase URL
+      ## @default ""
+      SUPABASE_URL: ""
+      ## Enable logs
+      ## @default "true"
+      NEXT_PUBLIC_ENABLE_LOGS: "true"
+
+  ## Supabase Auth configuration
+  auth:
+    ## Auth image configuration
+    image:
+      ## Auth image tag
+      ## @default "v2.145.0"
+      tag: "v2.145.0"
+    ## Auth environment variables
+    environment:
+      ## API external URL
+      ## @default ""
+      API_EXTERNAL_URL: ""
+      ## Supabase URL
+      ## @default ""
+      SUPABASE_URL: ""
+      ## GoTrue site URL
+      ## @default ""
+      GOTRUE_SITE_URL: ""
+      ## External email enabled
+      ## @default "true"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      ## Mailer auto confirm
+      ## @default "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+
+  ## Supabase REST API configuration
+  rest:
+    ## REST image configuration
+    image:
+      ## REST image tag
+      ## @default "v12.0.1"
+      tag: "v12.0.1"
+
+  ## Supabase Realtime configuration
+  realtime:
+    ## Realtime image configuration
+    image:
+      ## Realtime image tag
+      ## @default "v2.27.5"
+      tag: "v2.27.5"
+
+  ## Supabase Meta configuration
+  meta:
+    ## Meta image configuration
+    image:
+      ## Meta image tag
+      ## @default "v0.80.0"
+      tag: "v0.80.0"
+
+  ## Supabase Storage configuration
+  storage:
+    ## Storage image configuration
+    image:
+      ## Storage image tag
+      ## @default "v0.46.4"
+      tag: "v0.46.4"
+    ## Storage persistence configuration
+    persistence:
+      ## Enable persistence
+      ## @default true
+      enabled: true
+      ## Storage class
+      ## @default "managed-csi-premium"
+      storageClass: "managed-csi-premium"
+      ## Storage size
+      ## @default 10Gi
+      size: 10Gi
+
+  ## Supabase Imgproxy configuration
+  imgproxy:
+    ## Imgproxy image configuration
+    image:
+      ## Imgproxy image tag
+      ## @default "v3.8.0"
+      tag: "v3.8.0"
+    ## Imgproxy persistence configuration
+    persistence:
+      ## Enable persistence
+      ## @default true
+      enabled: true
+      ## Storage class
+      ## @default "managed-csi-premium"
+      storageClass: "managed-csi-premium"
+      ## Storage size
+      ## @default 5Gi
+      size: 5Gi
+
+  ## Supabase Kong configuration
+  kong:
+    ## Kong image configuration
+    image:
+      ## Kong image repository
+      ## @default "kong"
+      repository: "kong"
+      ## Kong image tag
+      ## @default "2.8.1"
+      tag: "2.8.1"
+
+  ## Supabase Analytics configuration
+  analytics:
+    ## Enable analytics
+    ## @default true
+    enabled: true
+    ## Analytics image configuration
+    image:
+      ## Analytics image tag
+      ## @default "1.4.0"
+      tag: "1.4.0"
+
+  ## Supabase Vector configuration
+  vector:
+    ## Enable vector
+    ## @default false
+    enabled: false
+    ## Vector image configuration
+    image:
+      ## Vector image tag
+      ## @default "0.34.0-alpine"
+      tag: "0.34.0-alpine"
+
+  ## Supabase Functions configuration
+  functions:
+    ## Functions image configuration
+    image:
+      ## Functions image tag
+      ## @default "v1.41.2"
+      tag: "v1.41.2"
+
+  ## Supabase secrets configuration
+  secrets:
+    ## JWT secret reference
+    jwt:
+      ## JWT secret reference
+      ## @default "supabase-jwt"
+      secretRef: "supabase-jwt"
+    ## SMTP secret reference
+    smtp:
+      ## SMTP secret reference
+      ## @default "supabase-smtp"
+      secretRef: "supabase-smtp"
+    ## Dashboard secret reference
+    dashboard:
+      ## Dashboard secret reference
+      ## @default "supabase-dashboard"
+      secretRef: "supabase-dashboard"
+    ## Database secret reference
+    db:
+      ## Database secret reference
+      ## @default "supabase-db"
+      secretRef: "supabase-db"
+
+# Weaviate Configuration
+weaviate:
+  ## Enable Weaviate
+  ## @default true
+  enabled: true
+  ## Weaviate image configuration
+  image:
+    ## Weaviate image tag
+    ## @default "17.5.0"
+    tag: "17.5.0"
+
+  ## Weaviate persistence configuration
+  persistence:
+    ## Enable persistence
+    ## @default true
+    enabled: true
+    ## Storage class
+    ## @default "managed-csi-premium"
+    storageClass: "managed-csi-premium"
+    ## Storage size
+    ## @default 20Gi
+    size: 20Gi
+
+  ## Resource requests and limits
+  resources:
+    ## Resource requests
+    requests:
+      ## CPU request
+      ## @default "1"
+      cpu: "1"
+      ## Memory request
+      ## @default "2Gi"
+      memory: "2Gi"
+    ## Resource limits
+    limits:
+      ## CPU limit
+      ## @default "2"
+      cpu: "2"
+      ## Memory limit
+      ## @default "4Gi"
+      memory: "4Gi"
+
+# Nginx Ingress Controller
+nginx-ingress:
+  ## Enable nginx ingress
+  ## @default true
+  enabled: true
+  ## Nginx ingress controller configuration
+  controller:
+    ## Controller service configuration
+    service:
+      ## Service type
+      ## @default LoadBalancer
+      type: LoadBalancer
+      ## Service annotations
+      annotations:
+        ## Azure load balancer internal setting
+        ## @default "false"
+        service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+    ## Controller resource configuration
+    resources:
+      ## Resource requests
+      requests:
+        ## CPU request
+        ## @default "0.5"
+        cpu: "0.5"
+        ## Memory request
+        ## @default "1Gi"
+        memory: "1Gi"
+      ## Resource limits
+      limits:
+        ## CPU limit
+        ## @default "1"
+        cpu: "1"
+        ## Memory limit
+        ## @default "2Gi"
+        memory: "2Gi"
+
+# Network Policies
+networkPolicies:
+  ## Enable network policies
+  ## @default true
+  enabled: true
+  ## Nginx ingress network policy
+  nginxIngress:
+    ## Enable nginx ingress network policy
+    ## @default true
+    enabled: true
+
+# Configuration Setup
+configurationSetup:
+  ## Enable configuration setup
+  ## @default true
+  enabled: true
+  ## Migration job configuration
+  migrationJob:
+    ## Enable migration job
+    ## @default true
+    enabled: true
+    ## Migration job image configuration
+    image:
+      ## Migration job image repository
+      ## @default stackai/stackend-backend
+      repository: stackai/stackend-backend
+      ## Migration job image tag
+      ## @default latest
+      tag: latest
+
+  ## Configuration setup secrets
+  secrets:
+    ## ACR secret configuration
+    acrSecret:
+      ## Enable ACR secret
+      ## @default true
+      enabled: true
+    ## StackAI licence secret configuration
+    stackendLicence:
+      ## Enable StackAI licence secret
+      ## @default true
+      enabled: true
+
+# External Secrets Operator (for Azure Key Vault integration)
+externalSecrets:
+  ## Enable external secrets
+  ## @default true
+  enabled: true
+  ## Azure Key Vault configuration
+  azureKeyVault:
+    ## Enable Azure Key Vault
+    ## @default true
+    enabled: true
+    ## Key Vault URL
+    ## @default ""
+    vaultUrl: ""
+    ## Azure tenant ID
+    ## @default ""
+    tenantId: ""
+    ## Azure client ID
+    ## @default ""
+    clientId: ""
+    ## Azure client secret
+    ## @default ""
+    clientSecret: ""
