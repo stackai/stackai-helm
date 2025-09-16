@@ -1,0 +1,449 @@
+# Local testing values for StackAI BYOC
+# This file contains configurations for running locally with public images
+# Only stackend and stackweb use Azure images, rest use public images
+
+# Global configuration for local testing
+global:
+  imageRegistry: "" # Empty for public images, will be overridden for Azure images
+  imagePullSecrets: [] # No secrets needed for public images
+  storageClass: "standard" # Use standard storage class for local testing
+  domain: "localhost"
+  tls:
+    enabled: false
+    secretName: ""
+
+# Azure-specific configuration (minimal for local testing)
+azure:
+  resourceGroup: ""
+  subscriptionId: ""
+  tenantId: ""
+  keyVaultName: ""
+  acrName: "stackai.azurecr.io"
+  nodeSelector: {}
+  tolerations: []
+
+# StackAI Core Components - Using Azure images
+stackend:
+  enabled: true
+  image:
+    registry: "stackai.azurecr.io" # Azure registry for stackend
+    repository: stackai/stackend-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1 # Single replica for local testing
+
+  service:
+    type: ClusterIP
+    ports:
+      api: 8000
+      debug: 8888
+
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+  env:
+    configMapRef: "stackend--env"
+
+  configMaps:
+    - name: stackend-cm0
+      files:
+        llm_config.toml: |
+          # LLM Configuration
+          [providers]
+          # Add your LLM provider configurations here
+    - name: stackend-cm1
+      files:
+        llm_local_config.toml: |
+          # Local LLM Configuration
+          [local_models]
+          # Add local model configurations here
+    - name: stackend-cm2
+      files:
+        embeddings_config.toml: |
+          # Embeddings Configuration
+          [embeddings]
+          # Add embeddings configurations here
+
+  secrets:
+    - name: stackend-licence-secret
+      data:
+        licence: "your-licence-key-here" # Replace with actual licence
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+      nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+      nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    hosts:
+      - host: localhost
+        paths:
+          - path: /users
+            pathType: Prefix
+          - path: /organizations
+            pathType: Prefix
+          - path: /roles
+            pathType: Prefix
+          - path: /onboarding
+            pathType: Prefix
+          - path: /projects
+            pathType: Prefix
+          - path: /folders
+            pathType: Prefix
+          - path: /connections
+            pathType: Prefix
+          - path: /config
+            pathType: Prefix
+          - path: /knowledge_bases
+            pathType: Prefix
+          - path: /notifications
+            pathType: Prefix
+          - path: /profiles
+            pathType: Prefix
+          - path: /agent-builder
+            pathType: Prefix
+
+stackweb:
+  enabled: true
+  image:
+    registry: "stackai.azurecr.io" # Azure registry for stackweb
+    repository: stackai/stackweb
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1 # Single replica for local testing
+
+  service:
+    type: ClusterIP
+    ports:
+      web: 3000
+
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+  env:
+    configMapRef: "stackweb--env"
+
+  command: ["/bin/sh", "-c", "npm run dev"]
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    hosts:
+      - host: localhost
+        paths:
+          - path: /
+            pathType: Prefix
+
+celery:
+  enabled: true
+  image:
+    registry: "stackai.azurecr.io" # Azure registry for celery
+    repository: stackai/stackend-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1 # Single replica for local testing
+
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+  env:
+    configMapRef: "stackend--env"
+
+  configMaps:
+    - name: celery-worker-cm0
+      files:
+        # Celery worker configuration files
+    - name: celery-worker-cm1
+      files:
+        # Additional celery configuration
+    - name: celery-worker-cm2
+      files:
+        # Additional celery configuration
+
+# Infrastructure Components - Using public images
+mongodb:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnami/mongodb
+    tag: "7.0.8"
+    pullPolicy: IfNotPresent
+
+  auth:
+    enabled: true
+    rootPassword: "mongodb123"
+    username: "stackai"
+    password: "stackai123"
+    database: "stackai"
+
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: 10Gi # Smaller storage for local testing
+
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+redis:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: "7.2.3"
+    pullPolicy: IfNotPresent
+
+  auth:
+    enabled: true
+    password: "redis123"
+
+  master:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 5Gi # Smaller storage for local testing
+
+  resources:
+    requests:
+      cpu: "0.25"
+      memory: "512Mi"
+    limits:
+      cpu: "0.5"
+      memory: "1Gi"
+
+# Supabase Configuration - Using public images
+supabase:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: supabase/supabase
+    tag: "24.03.03"
+    pullPolicy: IfNotPresent
+
+  db:
+    enabled: true
+    image:
+      registry: docker.io
+      repository: supabase/postgres
+      tag: "15.1.0.147"
+      pullPolicy: IfNotPresent
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 10Gi # Smaller storage for local testing
+
+  studio:
+    image:
+      registry: docker.io
+      repository: supabase/studio
+      tag: "20240326-5e5586d"
+      pullPolicy: IfNotPresent
+    environment:
+      STUDIO_DEFAULT_ORGANIZATION: "My Organization"
+      STUDIO_DEFAULT_PROJECT: "My Project"
+      SUPABASE_PUBLIC_URL: "http://localhost"
+      SUPABASE_URL: "http://localhost"
+      NEXT_PUBLIC_ENABLE_LOGS: "true"
+
+  auth:
+    image:
+      registry: docker.io
+      repository: supabase/gotrue
+      tag: "v2.145.0"
+      pullPolicy: IfNotPresent
+    environment:
+      API_EXTERNAL_URL: "http://localhost"
+      SUPABASE_URL: "http://localhost"
+      GOTRUE_SITE_URL: "http://localhost"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+
+  rest:
+    image:
+      registry: docker.io
+      repository: postgrest/postgrest
+      tag: "v12.0.1"
+      pullPolicy: IfNotPresent
+
+  realtime:
+    image:
+      registry: docker.io
+      repository: supabase/realtime
+      tag: "v2.27.5"
+      pullPolicy: IfNotPresent
+
+  meta:
+    image:
+      registry: docker.io
+      repository: supabase/postgres-meta
+      tag: "v0.80.0"
+      pullPolicy: IfNotPresent
+
+  storage:
+    image:
+      registry: docker.io
+      repository: supabase/storage-api
+      tag: "v0.46.4"
+      pullPolicy: IfNotPresent
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 5Gi # Smaller storage for local testing
+
+  imgproxy:
+    image:
+      registry: docker.io
+      repository: darthsim/imgproxy
+      tag: "v3.8.0"
+      pullPolicy: IfNotPresent
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: 2Gi # Smaller storage for local testing
+
+  kong:
+    image:
+      registry: docker.io
+      repository: kong
+      tag: "2.8.1"
+      pullPolicy: IfNotPresent
+
+  analytics:
+    enabled: true
+    image:
+      registry: docker.io
+      repository: supabase/analytics
+      tag: "1.4.0"
+      pullPolicy: IfNotPresent
+
+  vector:
+    enabled: false
+    image:
+      registry: docker.io
+      repository: timberio/vector
+      tag: "0.34.0-alpine"
+      pullPolicy: IfNotPresent
+
+  functions:
+    image:
+      registry: docker.io
+      repository: supabase/edge-runtime
+      tag: "v1.41.2"
+      pullPolicy: IfNotPresent
+
+  secrets:
+    jwt:
+      secretRef: "supabase-jwt"
+    smtp:
+      secretRef: "supabase-smtp"
+    dashboard:
+      secretRef: "supabase-dashboard"
+    db:
+      secretRef: "supabase-db"
+
+# Weaviate Configuration - Using public images
+weaviate:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: semitechnologies/weaviate
+    tag: "1.22.4"
+    pullPolicy: IfNotPresent
+
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: 10Gi # Smaller storage for local testing
+
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+# Nginx Ingress Controller - Using public images
+nginx-ingress:
+  enabled: true
+  controller:
+    image:
+      registry: docker.io
+      repository: k8s.gcr.io/ingress-nginx/controller
+      tag: "v1.8.1"
+      pullPolicy: IfNotPresent
+    service:
+      type: NodePort # Use NodePort for local testing
+      nodePorts:
+        http: 30080
+        https: 30443
+    resources:
+      requests:
+        cpu: "0.25"
+        memory: "512Mi"
+      limits:
+        cpu: "0.5"
+        memory: "1Gi"
+
+# Network Policies - Disabled for local testing
+networkPolicies:
+  enabled: false
+  nginxIngress:
+    enabled: false
+
+# Configuration Setup
+configurationSetup:
+  enabled: true
+  migrationJob:
+    enabled: true
+    image:
+      repository: stackai/stackend-backend # Using Azure image
+      tag: latest
+      pullPolicy: IfNotPresent
+
+  secrets:
+    acrSecret:
+      enabled: false # No ACR secret needed for local testing
+    stackendLicence:
+      enabled: true
+
+# External Secrets Operator - Disabled for local testing
+externalSecrets:
+  enabled: false
+  azureKeyVault:
+    enabled: false
+    vaultUrl: ""
+    tenantId: ""
+    clientId: ""
+    clientSecret: ""
