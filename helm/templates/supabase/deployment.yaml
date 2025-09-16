@@ -1,4 +1,37 @@
 {{- if .Values.supabase.enabled }}
+# Supabase Database Initialization Script
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-supabase-db-init
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: supabase-db-init
+data:
+  init.sql: |
+    -- Create auth schema
+    CREATE SCHEMA IF NOT EXISTS auth;
+
+    -- Create anon role for PostgREST
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'anon') THEN
+            CREATE ROLE anon NOLOGIN;
+        END IF;
+    END
+    $$;
+
+    -- Grant necessary permissions to anon role
+    GRANT USAGE ON SCHEMA public TO anon;
+    GRANT USAGE ON SCHEMA auth TO anon;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+    GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;
+
+    -- Set default privileges for future tables
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO anon;
+
 # Supabase Database
 ---
 apiVersion: apps/v1
@@ -45,12 +78,17 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
           resources:
             {{- toYaml .Values.supabase.db.resources | nindent 12 }}
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: {{ include "stackai-byoc.fullname" . }}-supabase-db-pvc
+        - name: init-scripts
+          configMap:
+            name: {{ include "stackai-byoc.fullname" . }}-supabase-db-init
 
 # Supabase Studio
 ---
@@ -159,15 +197,21 @@ spec:
       containers:
         - name: rest
           image: "{{ if .Values.supabase.rest.image.registry }}{{ .Values.supabase.rest.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}postgrest/postgrest:{{ .Values.supabase.rest.image.tag }}"
+          env:
+            - name: PGRST_DB_URI
+              value: "postgres://postgres:postgres123@{{ include "stackai-byoc.fullname" . }}-supabase-db:5432/postgres"
+            - name: PGRST_DB_SCHEMA
+              value: "public"
+            - name: PGRST_DB_ANON_ROLE
+              value: "anon"
+            - name: PGRST_JWT_SECRET
+              value: "your-super-secret-jwt-token-with-at-least-32-characters-long"
+            - name: PGRST_DB_USE_LEGACY_GUCS
+              value: "false"
           ports:
             - containerPort: 3000
           resources:
-            requests:
-              cpu: "0.5"
-              memory: "1Gi"
-            limits:
-              cpu: "1"
-              memory: "2Gi"
+            {{- toYaml .Values.supabase.rest.resources | nindent 12 }}
 
 # Supabase Realtime
 ---

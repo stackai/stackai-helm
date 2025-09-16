@@ -1,0 +1,77 @@
+{{- if .Values.redis.enabled }}
+# Custom Redis Deployment for ARM64 compatibility
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-redis
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stackai-byoc.selectorLabels" . | nindent 6 }}
+      component: redis
+  template:
+    metadata:
+      labels:
+        {{- include "stackai-byoc.selectorLabels" . | nindent 8 }}
+        component: redis
+    spec:
+      containers:
+        - name: redis
+          image: "redis:7.2-alpine"
+          ports:
+            - containerPort: 6379
+          command: ["redis-server", "--appendonly", "yes"]
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "0.25"
+              memory: "512Mi"
+            limits:
+              cpu: "0.5"
+              memory: "1Gi"
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: {{ include "stackai-byoc.fullname" . }}-redis-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-redis-pvc
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.global.storageClass }}
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stackai-byoc.fullname" . }}-redis
+  labels:
+    {{- include "stackai-byoc.labels" . | nindent 4 }}
+    component: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
+    component: redis
+{{- end }}

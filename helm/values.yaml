@@ -40,16 +40,11 @@ azure:
   ## @default stackai.azurecr.io
   acrName: "stackai.azurecr.io"
   ## Node selector for Azure-specific workloads
-  nodeSelector:
-    ## Node pool selector
-    ## @default memory-optimized
-    nodepool: memory-optimized
+  ## @default {}
+  nodeSelector: {}  # Empty to disable node selector
   ## Tolerations for Azure-specific workloads
-  tolerations:
-    - key: workload
-      operator: Equal
-      value: memory-intensive
-      effect: NoSchedule
+  ## @default []
+  tolerations: []   # Empty to disable tolerations
 
 # StackAI Core Components
 stackend:
@@ -182,29 +177,7 @@ stackend:
     hosts:
       - host: stackai.example.com
         paths:
-          - path: /users
-            pathType: Prefix
-          - path: /organizations
-            pathType: Prefix
-          - path: /roles
-            pathType: Prefix
-          - path: /onboarding
-            pathType: Prefix
-          - path: /projects
-            pathType: Prefix
-          - path: /folders
-            pathType: Prefix
-          - path: /connections
-            pathType: Prefix
-          - path: /config
-            pathType: Prefix
-          - path: /knowledge_bases
-            pathType: Prefix
-          - path: /notifications
-            pathType: Prefix
-          - path: /profiles
-            pathType: Prefix
-          - path: /agent-builder
+          - path: /
             pathType: Prefix
 
 stackweb:
@@ -475,8 +448,8 @@ supabase:
     ## Database image configuration
     image:
       ## Database image tag
-      ## @default "15.1.0.147"
-      tag: "15.1.0.147"
+      ## @default "15.1"
+      tag: "15.1"
     ## Database persistence configuration
     persistence:
       ## Enable persistence

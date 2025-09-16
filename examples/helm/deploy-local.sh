@@ -42,12 +42,10 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
-print_status "Starting local deployment of StackAI BYOC..."
+print_status "Starting two-phase local deployment of StackAI BYOC..."
 
-# Create namespace if it doesn't exist
+# Set namespace variable (will be created by Helm)
 NAMESPACE="stackai-local"
-print_status "Creating namespace: $NAMESPACE"
-kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
 
 # Add required Helm repositories
 print_status "Adding required Helm repositories..."
@@ -55,15 +53,30 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 
-# Deploy the main StackAI application (includes all dependencies)
-print_status "Deploying StackAI application with all dependencies..."
-helm upgrade --install stackai-local ../../helm \
+# Deploy infrastructure first (MongoDB, Redis, Supabase, Weaviate, Ingress)
+print_status "Deploying infrastructure components first..."
+helm upgrade --install stackai-infra ../../helm \
+  --namespace $NAMESPACE \
+  --create-namespace \
+  --values values-local.yaml \
+  --set stackend.enabled=false \
+  --set stackweb.enabled=false \
+  --set celery.enabled=false \
+  --wait --timeout 10m
+
+# Wait for infrastructure pods to be ready
+print_status "Waiting for infrastructure pods to be ready..."
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-byoc -n $NAMESPACE --timeout=300s
+
+# Deploy the application components
+print_status "Deploying application components (stackend, stackweb, celery)..."
+helm upgrade stackai-local ../../helm \
   --namespace $NAMESPACE \
   --values values-local.yaml \
-  --wait
+  --wait --timeout 10m
 
-# Wait for all pods to be ready
-print_status "Waiting for all pods to be ready..."
+# Wait for application pods to be ready
+print_status "Waiting for application pods to be ready..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-byoc -n $NAMESPACE --timeout=300s
 
 # Get the service information
@@ -75,7 +88,7 @@ print_status "Getting ingress information..."
 kubectl get ingress -n $NAMESPACE
 
 # Display access information
-print_status "Deployment completed successfully!"
+print_status "Two-phase deployment completed successfully!"
 echo ""
 print_status "Access Information:"
 echo "  - StackWeb (Frontend): http://localhost:30080/"
@@ -93,4 +106,5 @@ echo "  kubectl logs -f deployment/stackai-local-stackweb -n $NAMESPACE"
 echo ""
 print_status "To delete the deployment:"
 echo "  helm uninstall stackai-local -n $NAMESPACE"
+echo "  helm uninstall stackai-infra -n $NAMESPACE"
 echo "  kubectl delete namespace $NAMESPACE"

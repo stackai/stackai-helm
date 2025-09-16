@@ -5,9 +5,8 @@
 # Global configuration for local testing
 global:
   imageRegistry: "" # Empty for public images, will be overridden for Azure images
-  imagePullSecrets:
-    - name: acr-secret # ACR secret for Azure images (stackend, stackweb, celery)
-  storageClass: "standard" # Use standard storage class for local testing
+  imagePullSecrets: [] # No image pull secrets for local testing with public images
+  storageClass: "hostpath" # Use hostpath storage class for local testing
   domain: "localhost"
   tls:
     enabled: false
@@ -23,9 +22,9 @@ azure:
   nodeSelector: {}
   tolerations: []
 
-# StackAI Core Components - Using Azure images
+# StackAI Core Components - Disabled for local testing (requires Azure images)
 stackend:
-  enabled: true
+  enabled: false # Disabled for local testing - requires Azure images
   image:
     registry: "stackai.azurecr.io" # Azure registry for stackend
     repository: stackai/stackend-backend
@@ -90,33 +89,11 @@ stackend:
     hosts:
       - host: localhost
         paths:
-          - path: /users
-            pathType: Prefix
-          - path: /organizations
-            pathType: Prefix
-          - path: /roles
-            pathType: Prefix
-          - path: /onboarding
-            pathType: Prefix
-          - path: /projects
-            pathType: Prefix
-          - path: /folders
-            pathType: Prefix
-          - path: /connections
-            pathType: Prefix
-          - path: /config
-            pathType: Prefix
-          - path: /knowledge_bases
-            pathType: Prefix
-          - path: /notifications
-            pathType: Prefix
-          - path: /profiles
-            pathType: Prefix
-          - path: /agent-builder
+          - path: /
             pathType: Prefix
 
 stackweb:
-  enabled: true
+  enabled: false # Disabled for local testing - requires Azure images
   image:
     registry: "stackai.azurecr.io" # Azure registry for stackweb
     repository: stackai/stackweb
@@ -157,7 +134,7 @@ stackweb:
             pathType: Prefix
 
 celery:
-  enabled: true
+  enabled: false # Disabled for local testing - requires Azure images
   image:
     registry: "stackai.azurecr.io" # Azure registry for celery (same as stackend)
     repository: stackai/stackend-backend
@@ -188,44 +165,12 @@ celery:
       files:
         # Additional celery configuration
 
-# Infrastructure Components - Using Bitnami charts with public images
+# Infrastructure Components - Custom deployments for ARM64 compatibility
 mongodb:
-  enabled: true
-  auth:
-    enabled: true
-    rootPassword: "mongodb123"
-    username: "stackai"
-    password: "stackai123"
-    database: "stackai"
-  persistence:
-    enabled: true
-    storageClass: "standard"
-    size: 10Gi # Smaller storage for local testing
-  resources:
-    requests:
-      cpu: "0.5"
-      memory: "1Gi"
-    limits:
-      cpu: "1"
-      memory: "2Gi"
+  enabled: true # Enable custom MongoDB deployment
 
 redis:
-  enabled: true
-  auth:
-    enabled: true
-    password: "redis123"
-  master:
-    persistence:
-      enabled: true
-      storageClass: "standard"
-      size: 5Gi # Smaller storage for local testing
-  resources:
-    requests:
-      cpu: "0.25"
-      memory: "512Mi"
-    limits:
-      cpu: "0.5"
-      memory: "1Gi"
+  enabled: true # Enable custom Redis deployment
 
 # Supabase Configuration - Using public images
 supabase:
@@ -233,18 +178,18 @@ supabase:
   db:
     enabled: true
     image:
-      tag: "15.1.0.147"
+      tag: "latest"
     persistence:
       enabled: true
-      storageClass: "standard"
+      storageClass: "hostpath"
       size: 10Gi # Smaller storage for local testing
 
   studio:
     image:
-      tag: "20240326-5e5586d"
+      tag: "latest"
     environment:
-      STUDIO_DEFAULT_ORGANIZATION: "My Organization"
-      STUDIO_DEFAULT_PROJECT: "My Project"
+      STUDIO_DEFAULT_ORGANIZATION: "StackAI"
+      STUDIO_DEFAULT_PROJECT: "StackAI"
       SUPABASE_PUBLIC_URL: "http://localhost"
       SUPABASE_URL: "http://localhost"
       NEXT_PUBLIC_ENABLE_LOGS: "true"
@@ -258,10 +203,20 @@ supabase:
       GOTRUE_SITE_URL: "http://localhost"
       GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
       GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_DB_DRIVER: "postgres"
+      DATABASE_URL: "postgres://postgres:postgres123@stackai-test-stackai-byoc-supabase-db:5432/postgres"
+      GOTRUE_JWT_SECRET: "your-super-secret-jwt-token-with-at-least-32-characters-long"
 
   rest:
     image:
       tag: "v12.0.1"
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
 
   realtime:
     image:
@@ -276,7 +231,7 @@ supabase:
       tag: "v0.46.4"
     persistence:
       enabled: true
-      storageClass: "standard"
+      storageClass: "hostpath"
       size: 5Gi # Smaller storage for local testing
 
   imgproxy:
@@ -284,7 +239,7 @@ supabase:
       tag: "v3.8.0"
     persistence:
       enabled: true
-      storageClass: "standard"
+      storageClass: "hostpath"
       size: 2Gi # Smaller storage for local testing
 
   kong:
@@ -293,16 +248,17 @@ supabase:
       tag: "2.8.1"
 
   analytics:
-    enabled: true
+    enabled: false # Disable analytics as the image doesn't exist
     image:
       tag: "1.4.0"
 
   vector:
-    enabled: false
+    enabled: false # Disable vector for local testing
     image:
       tag: "0.34.0-alpine"
 
   functions:
+    enabled: true
     image:
       tag: "v1.41.2"
 
@@ -320,20 +276,20 @@ supabase:
 weaviate:
   enabled: true
   image:
-    tag: "17.5.0"
+    tag: "latest"
 
   persistence:
     enabled: true
-    storageClass: "standard"
-    size: 10Gi # Smaller storage for local testing
+    storageClass: "hostpath"
+    size: 5Gi # Smaller storage for local testing
 
   resources:
     requests:
-      cpu: "0.5"
-      memory: "1Gi"
+      cpu: "100m"
+      memory: "256Mi"
     limits:
-      cpu: "1"
-      memory: "2Gi"
+      cpu: "500m"
+      memory: "512Mi"
 
 # Nginx Ingress Controller - Using public images
 nginx-ingress:
@@ -362,15 +318,11 @@ networkPolicies:
 configurationSetup:
   enabled: true
   migrationJob:
-    enabled: true
-    image:
-      repository: stackai/stackend-backend # Using Azure image
-      tag: latest
-      pullPolicy: IfNotPresent
+    enabled: false # Disabled for local testing - requires Azure images
 
   secrets:
     acrSecret:
-      enabled: true # Enable ACR secret for Azure images
+      enabled: false # Disable ACR secret for local testing with public images
     stackendLicence:
       enabled: true
 

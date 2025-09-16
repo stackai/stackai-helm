@@ -23,7 +23,7 @@ spec:
       {{- end }}
       containers:
         - name: migration
-          image: "{{ .Values.global.imageRegistry }}/{{ .Values.configurationSetup.migrationJob.image.repository }}:{{ .Values.configurationSetup.migrationJob.image.tag }}"
+          image: "{{ if .Values.configurationSetup.migrationJob.image.registry }}{{ .Values.configurationSetup.migrationJob.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}{{ .Values.configurationSetup.migrationJob.image.repository }}:{{ .Values.configurationSetup.migrationJob.image.tag }}"
           command: ["python", "manage.py", "migrate"]
           envFrom:
             - configMapRef:

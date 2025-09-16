@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: weaviate
-          image: "{{ if .Values.weaviate.image.registry }}{{ .Values.weaviate.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}weaviate/weaviate:{{ .Values.weaviate.image.tag }}"
+          image: "semitechnologies/weaviate:{{ .Values.weaviate.image.tag }}"
           ports:
             - name: http
               containerPort: 8080
