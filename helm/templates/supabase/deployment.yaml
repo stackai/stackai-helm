@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:{{ .Values.supabase.db.image.tag }}
+          image: "{{ if .Values.supabase.db.image.registry }}{{ .Values.supabase.db.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}postgres:{{ .Values.supabase.db.image.tag }}"
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
         - name: studio
-          image: supabase/studio:{{ .Values.supabase.studio.image.tag }}
+          image: "{{ if .Values.supabase.studio.image.registry }}{{ .Values.supabase.studio.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}supabase/studio:{{ .Values.supabase.studio.image.tag }}"
           env:
             {{- range $key, $value := .Values.supabase.studio.environment }}
             - name: {{ $key }}
@@ -119,7 +119,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: supabase/gotrue:{{ .Values.supabase.auth.image.tag }}
+          image: "{{ if .Values.supabase.auth.image.registry }}{{ .Values.supabase.auth.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}supabase/gotrue:{{ .Values.supabase.auth.image.tag }}"
           env:
             {{- range $key, $value := .Values.supabase.auth.environment }}
             - name: {{ $key }}
@@ -158,7 +158,7 @@ spec:
     spec:
       containers:
         - name: rest
-          image: postgrest/postgrest:{{ .Values.supabase.rest.image.tag }}
+          image: "{{ if .Values.supabase.rest.image.registry }}{{ .Values.supabase.rest.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}postgrest/postgrest:{{ .Values.supabase.rest.image.tag }}"
           ports:
             - containerPort: 3000
           resources:
@@ -192,7 +192,7 @@ spec:
     spec:
       containers:
         - name: realtime
-          image: supabase/realtime:{{ .Values.supabase.realtime.image.tag }}
+          image: "{{ if .Values.supabase.realtime.image.registry }}{{ .Values.supabase.realtime.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}supabase/realtime:{{ .Values.supabase.realtime.image.tag }}"
           ports:
             - containerPort: 4000
           livenessProbe:
@@ -231,7 +231,7 @@ spec:
     spec:
       containers:
         - name: meta
-          image: supabase/postgres-meta:{{ .Values.supabase.meta.image.tag }}
+          image: "{{ if .Values.supabase.meta.image.registry }}{{ .Values.supabase.meta.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}supabase/postgres-meta:{{ .Values.supabase.meta.image.tag }}"
           ports:
             - containerPort: 8080
           resources:
@@ -265,7 +265,7 @@ spec:
     spec:
       containers:
         - name: storage
-          image: supabase/storage-api:{{ .Values.supabase.storage.image.tag }}
+          image: "{{ if .Values.supabase.storage.image.registry }}{{ .Values.supabase.storage.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}supabase/storage-api:{{ .Values.supabase.storage.image.tag }}"
           ports:
             - containerPort: 5000
           livenessProbe:
@@ -311,7 +311,7 @@ spec:
     spec:
       containers:
         - name: imgproxy
-          image: darthsim/imgproxy:{{ .Values.supabase.imgproxy.image.tag }}
+          image: "{{ if .Values.supabase.imgproxy.image.registry }}{{ .Values.supabase.imgproxy.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}darthsim/imgproxy:{{ .Values.supabase.imgproxy.image.tag }}"
           env:
             {{- range $key, $value := .Values.supabase.imgproxy.environment }}
             - name: {{ $key }}
@@ -404,7 +404,7 @@ spec:
     spec:
       containers:
         - name: analytics
-          image: supabase/analytics:{{ .Values.supabase.analytics.image.tag }}
+          image: "{{ if .Values.supabase.analytics.image.registry }}{{ .Values.supabase.analytics.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}supabase/analytics:{{ .Values.supabase.analytics.image.tag }}"
           ports:
             - containerPort: 4000
           livenessProbe:
@@ -444,7 +444,7 @@ spec:
     spec:
       containers:
         - name: functions
-          image: supabase/edge-runtime:{{ .Values.supabase.functions.image.tag }}
+          image: "{{ if .Values.supabase.functions.image.registry }}{{ .Values.supabase.functions.image.registry }}/{{ else if .Values.global.imageRegistry }}{{ .Values.global.imageRegistry }}/{{ end }}supabase/edge-runtime:{{ .Values.supabase.functions.image.tag }}"
           ports:
             - containerPort: 9000
           resources:

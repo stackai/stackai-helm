@@ -16,7 +16,7 @@ spec:
     - name: debug
       port: {{ .Values.stackend.service.ports.debug }}
       targetPort: {{ .Values.stackend.service.ports.debug }}
-        protocol: TCP
+      protocol: TCP
   selector:
     {{- include "stackai-byoc.selectorLabels" . | nindent 4 }}
     component: stackend
