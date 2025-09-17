@@ -43,16 +43,16 @@ Official StackAI Unstructured API Helm chart.
 | serviceAccount.name | string | `""` |  |
 | unstructured.affinity | object | `{}` |  |
 | unstructured.enabled | bool | `true` |  |
+| unstructured.env.DATABASE_URL | string | `""` |  |
 | unstructured.env.DEBUG | string | `"false"` |  |
 | unstructured.env.ENVIRONMENT | string | `"production"` |  |
 | unstructured.env.LOG_LEVEL | string | `"INFO"` |  |
+| unstructured.env.UNSTRUCTURED_API_KEY | string | `""` |  |
 | unstructured.env.UNSTRUCTURED_PARALLEL_MODE_ENABLED | string | `"false"` |  |
 | unstructured.env.UNSTRUCTURED_PARALLEL_MODE_RETRY_ATTEMPTS | string | `"2"` |  |
 | unstructured.env.UNSTRUCTURED_PARALLEL_MODE_SPLIT_SIZE | string | `"1"` |  |
 | unstructured.env.UNSTRUCTURED_PARALLEL_MODE_THREADS | string | `"3"` |  |
 | unstructured.env.UNSTRUCTURED_PARALLEL_MODE_URL | string | `""` |  |
-| unstructured.env.DATABASE_URL | string | `""` |  |
-| unstructured.env.UNSTRUCTURED_API_KEY | string | `""` |  |
 | unstructured.image.pullPolicy | string | `"IfNotPresent"` |  |
 | unstructured.image.repository | string | `"downloads.unstructured.io/unstructured-io/unstructured-api"` |  |
 | unstructured.image.tag | string | `"0.0.80"` |  |
@@ -94,113 +94,3 @@ Official StackAI Unstructured API Helm chart.
 | unstructured.service.type | string | `"ClusterIP"` |  |
 | unstructured.tolerations | list | `[]` |  |
 
-## Description
-
-The StackAI Unstructured API Helm chart provides a production-ready deployment of the Unstructured API service for document processing in LLM and RAG applications. This chart uses the public Unstructured API image and is configured entirely through Helm values without requiring external secret management.
-
-## Features
-
-* **Production-ready**: Configured with proper resource limits, health checks, and security contexts
-* **Public Image**: Uses the official Unstructured API public Docker image
-* **Simple Configuration**: Environment variables configured directly through Helm values
-* **Ingress Support**: NGINX ingress with TLS termination and cert-manager integration
-* **Scalable**: Supports horizontal pod autoscaling and custom resource allocation
-* **Configurable**: Extensive configuration options for the Unstructured API
-
-## Prerequisites
-
-* Kubernetes 1.19+
-* Helm 3.0+
-* NGINX Ingress Controller (if using ingress)
-* cert-manager (if using TLS certificates)
-
-## Installation
-
-```bash
-# Add the StackAI Helm repository (when available)
-helm repo add stackai https://stackai.github.io/stackai-helm
-
-# Install the chart
-helm install unstructured stackai/stackai-unstructured \
-  --namespace unstructured \
-  --create-namespace \
-  --values values.yaml
-```
-
-## Configuration
-
-The chart can be configured through the `values.yaml` file. Key configuration areas include:
-
-### Image Configuration
-
-Configure the container image and pull policy:
-
-```yaml
-unstructured:
-  image:
-    repository: "downloads.unstructured.io/unstructured-io/unstructured-api"
-    tag: "0.0.80"
-    pullPolicy: IfNotPresent
-```
-
-### Resource Management
-
-Set appropriate resource limits and requests:
-
-```yaml
-unstructured:
-  resources:
-    requests:
-      memory: 512Mi
-      cpu: 200m
-    limits:
-      memory: 1Gi
-      cpu: 1000m
-```
-
-### Ingress Configuration
-
-Enable and configure ingress for external access:
-
-```yaml
-ingress:
-  enabled: true
-  className: "nginx"
-  hosts:
-    - host: unstructured-api.yourdomain.com
-      paths:
-        - path: /
-          pathType: Prefix
-```
-
-### External Secrets
-
-Configure Azure Key Vault integration:
-
-```yaml
-externalSecrets:
-  enabled: true
-  secretStore:
-    vaultUrl: "https://your-keyvault.vault.azure.net/"
-    tenantId: "your-tenant-id"
-    servicePrincipal:
-      clientId: "your-client-id"
-```
-
-## Security
-
-This chart implements security best practices:
-
-* Non-root container execution
-* Read-only root filesystem options
-* Security contexts for pods and containers
-* External secret management
-* Network policies support (when configured)
-
-## Monitoring
-
-The chart includes health checks and monitoring endpoints:
-
-* Liveness probe on `/general/v0/general`
-* Readiness probe on `/general/v0/general`
-* Configurable probe timing and thresholds

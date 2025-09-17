@@ -53,10 +53,10 @@ unstructured:
     UNSTRUCTURED_PARALLEL_MODE_THREADS: "3"
     UNSTRUCTURED_PARALLEL_MODE_SPLIT_SIZE: "1"
     UNSTRUCTURED_PARALLEL_MODE_RETRY_ATTEMPTS: "2"
-    
+
     # Optional API key for Unstructured API (if needed)
     UNSTRUCTURED_API_KEY: ""
-    
+
     # Optional database URL (if needed for persistence)
     DATABASE_URL: ""
 
