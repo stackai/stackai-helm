@@ -126,27 +126,28 @@ jobs:
             echo "No index file created"
           fi
 
-      - name: Setup gh-pages branch
+      - name: Get version from release
+        id: get-version
         run: |
-          # Check if gh-pages branch exists
-          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
-            echo "gh-pages branch exists, checking out"
-            # Stash any uncommitted changes
-            git stash || echo "No changes to stash"
-            git checkout gh-pages
-            git pull origin gh-pages
+          # Get version from the release tag or use timestamp
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
           else
-            echo "gh-pages branch does not exist, creating it"
-            # Stash any uncommitted changes
-            git stash || echo "No changes to stash"
-            git checkout --orphan gh-pages
-            git rm -rf .
+            VERSION="v$(date +%Y%m%d-%H%M%S)"
           fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
 
-
-      - name: Create Jekyll configuration
+      - name: Create build branch
         run: |
-          # Create .gitignore to exclude Helm files from Jekyll processing
+          # Create a new branch for this build
+          BRANCH_NAME="build-${{ steps.get-version.outputs.version }}"
+          echo "Creating branch: $BRANCH_NAME"
+
+          # Create and checkout the build branch
+          git checkout -b "$BRANCH_NAME"
+
+          # Create Jekyll configuration files
           cat > .gitignore << EOF
           # Exclude Helm repository files from Jekyll processing
           index.yaml
@@ -170,11 +171,85 @@ jobs:
           # Create .nojekyll file to disable Jekyll processing
           touch .nojekyll
 
-      - name: Commit and push index and packages
+          # Create a simple README for the Helm repository
+          cat > README.md << EOF
+          # StackAI Helm Charts Repository
+
+          This repository contains Helm charts for StackAI components.
+
+          ## Installation
+
+          \`\`\`bash
+          helm repo add stackai https://stackai.github.io/stackai-helm/
+          helm repo update
+          \`\`\`
+
+          ## Available Charts
+
+          - stackai-stackend
+          - stackai-stackweb
+          - stackai-celery
+          - stackai-repl
+          - stackai-mongodb
+          - stackai-redis
+          - stackai-weaviate
+          - stackai-supabase
+          - stackai-nginx-ingress
+          \`\`\`
+          EOF
+
+      - name: Commit and push build branch
         run: |
-          git add index.yaml .cr-release-packages/ .gitignore _config.yml .nojekyll
-          git commit -m "chore: update helm repository index and packages" || echo "No changes to commit"
-          git push origin gh-pages
+          BRANCH_NAME="build-${{ steps.get-version.outputs.version }}"
+
+          # Add all files
+          git add index.yaml .cr-release-packages/ .gitignore _config.yml .nojekyll README.md
+
+          # Commit changes
+          git commit -m "chore: build helm repository for ${{ steps.get-version.outputs.version }}"
+
+          # Push the build branch
+          git push origin "$BRANCH_NAME"
+
+          echo "Build branch pushed: $BRANCH_NAME"
+
+      - name: Create Pull Request to gh-pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = 'build-${{ steps.get-version.outputs.version }}';
+            const title = `Deploy Helm Repository ${{ steps.get-version.outputs.version }}`;
+            const body = `This PR deploys the Helm repository for version ${{ steps.get-version.outputs.version }}.
+
+            ## Changes
+            - Updated Helm repository index
+            - Added packaged charts
+            - Configured Jekyll to serve Helm repository
+
+            ## Files
+            - \`index.yaml\` - Helm repository index
+            - \`.cr-release-packages/\` - Packaged Helm charts
+            - Jekyll configuration files`;
+
+            try {
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                head: branchName,
+                base: 'gh-pages',
+                body: body
+              });
+              console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
+            } catch (error) {
+              console.log('PR creation failed:', error.message);
+              // If PR already exists, just continue
+              if (error.message.includes('already exists')) {
+                console.log('PR already exists, continuing...');
+              } else {
+                throw error;
+              }
+            }
 
       - name: Create release summary
         run: |
