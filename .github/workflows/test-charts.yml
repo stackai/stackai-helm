@@ -155,10 +155,6 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - name: Install dependencies
-        run:
-          uv pip install pre-commit
-
       - uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files --verbose
