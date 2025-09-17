@@ -215,43 +215,30 @@ jobs:
 
           echo "Build branch pushed: $BRANCH_NAME"
 
-      - name: Create Pull Request to gh-pages
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const branchName = 'build-${{ steps.get-version.outputs.version }}';
-            const title = `Deploy Helm Repository ${{ steps.get-version.outputs.version }}`;
-            const body = `This PR deploys the Helm repository for version ${{ steps.get-version.outputs.version }}.
+      - name: Deploy to gh-pages
+        run: |
+          BRANCH_NAME="build-${{ steps.get-version.outputs.version }}"
 
-            ## Changes
-            - Updated Helm repository index
-            - Added packaged charts
-            - Configured Jekyll to serve Helm repository
+          # Check if gh-pages branch exists
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            echo "gh-pages branch exists, checking out"
+            git checkout gh-pages
+            git pull origin gh-pages
+          else
+            echo "gh-pages branch does not exist, creating it"
+            git checkout --orphan gh-pages
+            git rm -rf .
+          fi
 
-            ## Files
-            - \`index.yaml\` - Helm repository index
-            - \`.cr-release-packages/\` - Packaged Helm charts
-            - Jekyll configuration files`;
+          # Copy files from build branch to gh-pages
+          git checkout "$BRANCH_NAME" -- index.yaml .cr-release-packages/ .gitignore _config.yml .nojekyll README.md
 
-            try {
-              const pr = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                head: branchName,
-                base: 'gh-pages',
-                body: body
-              });
-              console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
-            } catch (error) {
-              console.log('PR creation failed:', error.message);
-              // If PR already exists, just continue
-              if (error.message.includes('already exists')) {
-                console.log('PR already exists, continuing...');
-              } else {
-                throw error;
-              }
-            }
+          # Commit and push to gh-pages
+          git add .
+          git commit -m "Deploy Helm Repository ${{ steps.get-version.outputs.version }}"
+          git push origin gh-pages
+
+          echo "Successfully deployed to gh-pages branch"
 
       - name: Create release summary
         run: |
