@@ -157,7 +157,7 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run:
-          uv add pre-commit
+          uv pip install pre-commit
 
       - uses: pre-commit/action@v3.0.1
         with:
