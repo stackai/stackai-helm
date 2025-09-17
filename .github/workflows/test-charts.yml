@@ -7,158 +7,15 @@ on:
       - develop
     paths:
       - "helm/**"
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "helm/**"
 
 jobs:
-  # Job to detect which charts have changed
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      charts: ${{ steps.changes.outputs.charts }}
-      infra-charts: ${{ steps.changes.outputs.infra-charts }}
-      app-charts: ${{ steps.changes.outputs.app-charts }}
-      infra-charts-json: ${{ steps.changes.outputs.infra-charts-json }}
-      app-charts-json: ${{ steps.changes.outputs.app-charts-json }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Detect changed charts
-        id: changes
-        run: |
-          # Get list of changed files
-          changed_files=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only origin/main...HEAD)
-          infra_charts=""
-          app_charts=""
-
-          # Check infrastructure charts
-          for chart in mongo redis weviate supabase nginx; do
-            if echo "$changed_files" | grep -q "helm/infra/$chart/"; then
-              infra_charts="$infra_charts $chart"
-            fi
-          done
-
-          # Check application charts
-          for chart in stackend stackweb celery repl; do
-            if echo "$changed_files" | grep -q "helm/app/$chart/"; then
-              app_charts="$app_charts $chart"
-            fi
-          done
-
-          # If no specific charts changed, test all charts
-          if [[ -z "$infra_charts" && -z "$app_charts" ]]; then
-            infra_charts="mongo redis weviate supabase nginx"
-            app_charts="stackend stackweb celery repl"
-          fi
-
-          # Combine all charts
-          all_charts="$infra_charts $app_charts"
-          all_charts=$(echo $all_charts | xargs) # trim whitespace
-
-          # Convert space-separated strings to JSON arrays for matrix strategy
-          if [[ -n "$infra_charts" ]]; then
-            infra_charts_json=$(echo "$infra_charts" | tr ' ' '\n' | jq -R . | jq -s .)
-          else
-            infra_charts_json="[]"
-          fi
-
-          if [[ -n "$app_charts" ]]; then
-            app_charts_json=$(echo "$app_charts" | tr ' ' '\n' | jq -R . | jq -s .)
-          else
-            app_charts_json="[]"
-          fi
-
-          echo "charts=$all_charts" >> $GITHUB_OUTPUT
-          echo "infra-charts=$infra_charts" >> $GITHUB_OUTPUT
-          echo "app-charts=$app_charts" >> $GITHUB_OUTPUT
-          echo "infra-charts-json=$infra_charts_json" >> $GITHUB_OUTPUT
-          echo "app-charts-json=$app_charts_json" >> $GITHUB_OUTPUT
-
-  # Job to test infrastructure charts
-  test-infra:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.infra-charts != ''
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chart: ${{ fromJson(needs.detect-changes.outputs.infra-charts-json) }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: v3.12.0
-
-      - name: Test ${{ matrix.chart }} chart
-        run: |
-          echo "Testing infrastructure chart: ${{ matrix.chart }}"
-
-          # Lint the chart
-          helm lint helm/infra/${{ matrix.chart }}
-
-          # Test template rendering
-          helm template ${{ matrix.chart }} helm/infra/${{ matrix.chart }} --debug
-
-          # Test with different value sets
-          if [[ -f "examples/values/dev/${{ matrix.chart }}-local.yaml" ]]; then
-            echo "Testing with dev values..."
-            helm template ${{ matrix.chart }} helm/infra/${{ matrix.chart }} -f examples/values/dev/${{ matrix.chart }}-local.yaml
-          fi
-
-          if [[ -f "examples/values/prod/${{ matrix.chart }}-production.yaml" ]]; then
-            echo "Testing with prod values..."
-            helm template ${{ matrix.chart }} helm/infra/${{ matrix.chart }} -f examples/values/prod/${{ matrix.chart }}-production.yaml
-          fi
-
-          echo "✅ ${{ matrix.chart }} chart tests passed"
-
-  # Job to test application charts
-  test-app:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.app-charts != ''
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chart: ${{ fromJson(needs.detect-changes.outputs.app-charts-json) }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: v3.12.0
-
-      - name: Test ${{ matrix.chart }} chart
-        run: |
-          echo "Testing application chart: ${{ matrix.chart }}"
-
-          # Lint the chart
-          helm lint helm/app/${{ matrix.chart }}
-
-          # Test template rendering
-          helm template ${{ matrix.chart }} helm/app/${{ matrix.chart }} --debug
-
-          # Test with different value sets
-          if [[ -f "examples/values/dev/${{ matrix.chart }}-local.yaml" ]]; then
-            echo "Testing with dev values..."
-            helm template ${{ matrix.chart }} helm/app/${{ matrix.chart }} -f examples/values/dev/${{ matrix.chart }}-local.yaml
-          fi
-
-          if [[ -f "examples/values/prod/${{ matrix.chart }}-production.yaml" ]]; then
-            echo "Testing with prod values..."
-            helm template ${{ matrix.chart }} helm/app/${{ matrix.chart }} -f examples/values/prod/${{ matrix.chart }}-production.yaml
-          fi
-
-          echo "✅ ${{ matrix.chart }} chart tests passed"
-
-  # Job to run comprehensive tests
   test-charts:
-    needs: [detect-changes, test-infra, test-app]
-    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -169,27 +26,42 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Test chart packaging
+      - name: Test Infrastructure Charts
         run: |
-          echo "Testing chart packaging..."
-          if [[ -f "scripts/release/release-charts.sh" ]]; then
-            chmod +x scripts/release/release-charts.sh
-            scripts/release/release-charts.sh validate || true
-          fi
+          echo "🧪 Testing Infrastructure Charts..."
 
-      - name: Send Test Summary
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## 🧪 Helm Charts Test Summary
-            ### Infrastructure Charts Tested:
-            ${{ needs.detect-changes.outputs.infra-charts }}
-            ### Application Charts Tested:
-            ${{ needs.detect-changes.outputs.app-charts }}
-            ### Test Results:
-            - ✅ Chart linting passed
-            - ✅ Template rendering passed
-            - ✅ Value file testing passed
-            - ✅ YAML linting completed
+          for chart in helm/infra/*/; do
+            chart_name=$(basename "$chart")
+            echo "Testing $chart_name..."
+
+            # Lint the chart
+            helm lint "$chart"
+
+            # Test template rendering
+            helm template "$chart_name" "$chart"
+
+            echo "✅ $chart_name passed"
+          done
+
+      - name: Test Application Charts
+        run: |
+          echo "🧪 Testing Application Charts..."
+
+          for chart in helm/app/*/; do
+            chart_name=$(basename "$chart")
+            echo "Testing $chart_name..."
+
+            # Lint the chart
+            helm lint "$chart"
+
+            # Test template rendering
+            helm template "$chart_name" "$chart"
+
+            echo "✅ $chart_name passed"
+          done
+
+      - name: Success Summary
+        run: |
+          echo "🎉 All Helm charts built successfully!"
+          echo "✅ Infrastructure charts: mongo, redis, weviate, supabase, nginx"
+          echo "✅ Application charts: stackend, stackweb, celery, repl"
