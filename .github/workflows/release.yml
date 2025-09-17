@@ -91,7 +91,7 @@ jobs:
         run: |
           echo "Validating helm/infra/${{ matrix.chart }}"
           helm lint helm/infra/${{ matrix.chart }}
-          helm template ${{ matrix.chart }} helm/infra/${{ matrix.chart }} --debug
+          helm template ${{ matrix.chart }} helm/infra/${{ matrix.chart }}
 
   # Job to validate application charts
   validate-app:
@@ -121,7 +121,7 @@ jobs:
         run: |
           echo "Validating helm/app/${{ matrix.chart }}"
           helm lint helm/app/${{ matrix.chart }}
-          helm template ${{ matrix.chart }} helm/app/${{ matrix.chart }} --debug
+          helm template ${{ matrix.chart }} helm/app/${{ matrix.chart }}
 
   # Job to package charts and update index
   package-and-release:

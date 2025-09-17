@@ -152,14 +152,6 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Run version checks
-        run: |
-          echo "Running version checks..."
-          if [[ -f "scripts/version/version-check.sh" ]]; then
-            chmod +x scripts/version/version-check.sh
-            scripts/version/version-check.sh check || true
-          fi
-
       - name: Test chart packaging
         run: |
           echo "Testing chart packaging..."
