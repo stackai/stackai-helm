@@ -119,6 +119,19 @@ jobs:
             echo "No index file created"
           fi
 
+      - name: Setup gh-pages branch
+        run: |
+          # Check if gh-pages branch exists
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            echo "gh-pages branch exists, checking out"
+            git checkout gh-pages
+            git pull origin gh-pages
+          else
+            echo "gh-pages branch does not exist, creating it"
+            git checkout --orphan gh-pages
+            git rm -rf .
+          fi
+
       - name: Commit and push index and packages
         run: |
           git add index.yaml .cr-release-packages/
