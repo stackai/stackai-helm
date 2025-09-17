@@ -40,6 +40,7 @@ spec:
         - name: weaviate
           image: "{{ .Values.weaviate.image.repository }}:{{ .Values.weaviate.image.tag }}"
           imagePullPolicy: {{ .Values.weaviate.image.pullPolicy }}
+          workingDir: /var/lib/weaviate
           {{- if .Values.weaviate.podSecurityContext.enabled }}
           securityContext:
             {{- omit .Values.weaviate.podSecurityContext "enabled" | toYaml | nindent 12 }}
@@ -54,17 +55,13 @@ spec:
             - name: grpc
               containerPort: {{ .Values.weaviate.service.ports.grpc }}
               protocol: TCP
-          {{- with .Values.weaviate.livenessProbe }}
-          {{- if .enabled }}
+          {{- if .Values.weaviate.livenessProbe.enabled }}
           livenessProbe:
-            {{- toYaml . | nindent 12 }}
+            {{- omit .Values.weaviate.livenessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
-          {{- end }}
-          {{- with .Values.weaviate.readinessProbe }}
-          {{- if .enabled }}
+          {{- if .Values.weaviate.readinessProbe.enabled }}
           readinessProbe:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- omit .Values.weaviate.readinessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
           volumeMounts:
             - name: data
