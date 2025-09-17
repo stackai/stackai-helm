@@ -126,6 +126,32 @@ jobs:
             echo "No index file created"
           fi
 
+      - name: Create Jekyll configuration
+        run: |
+          # Create .gitignore to exclude Helm files from Jekyll processing
+          cat > .gitignore << EOF
+          # Exclude Helm repository files from Jekyll processing
+          index.yaml
+          .cr-release-packages/
+          *.tgz
+          EOF
+
+          # Create _config.yml to configure Jekyll
+          cat > _config.yml << EOF
+          # Jekyll configuration for Helm repository
+          exclude:
+            - .cr-release-packages/
+            - index.yaml
+            - "*.tgz"
+
+          # Disable Jekyll processing for these files
+          include:
+            - .nojekyll
+          EOF
+
+          # Create .nojekyll file to disable Jekyll processing
+          touch .nojekyll
+
       - name: Setup gh-pages branch
         run: |
           # Check if gh-pages branch exists
@@ -141,7 +167,7 @@ jobs:
 
       - name: Commit and push index and packages
         run: |
-          git add index.yaml .cr-release-packages/
+          git add index.yaml .cr-release-packages/ .gitignore _config.yml .nojekyll
           git commit -m "chore: update helm repository index and packages" || echo "No changes to commit"
           git push origin gh-pages
 
