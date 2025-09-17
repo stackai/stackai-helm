@@ -1,0 +1,37 @@
+{{- if and .Values.kong.ingress.enabled .Values.kong.ingress.hosts -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "supabase.kong" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "supabase.labels" . | indent 4 }}
+{{- if .Values.kong.ingress.annotations }}
+  annotations:
+{{ toYaml .Values.kong.ingress.annotations | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.kong.ingress.class }}
+  ingressClassName: {{ .Values.kong.ingress.class }}
+{{- end }}
+{{- if .Values.kong.ingress.tls.enabled }}
+  tls:
+  - hosts:
+{{ toYaml .Values.kong.ingress.hosts | indent 4 }}
+    secretName: {{ .Values.kong.ingress.tls.secret  | default (include "supabase.kong.tlsSecret" .) }}
+{{- end }}
+  rules:
+{{- range .Values.kong.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "supabase.kong" $ }}
+            port:
+              number: 8000
+{{- end }}
+{{- end -}}

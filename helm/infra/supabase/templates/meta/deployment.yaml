@@ -1,0 +1,98 @@
+{{- if .Values.meta.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "supabase.meta" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "supabase.labels" . | indent 4 }}
+spec:
+  replicas: {{ default 1 .Values.meta.replicas }}
+  revisionHistoryLimit: {{ default 10 .Values.meta.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+{{ include "supabase.selectorLabels" . | indent 6 }}
+      app.kubernetes.io/component: meta
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+{{ include "supabase.selectorLabels" . | indent 8 }}
+        app.kubernetes.io/component: meta
+    spec:
+{{- if or .Values.serviceAccount.create .Values.meta.serviceAccountName }}
+      serviceAccountName: {{ default (include "supabase.serviceAccountName" .) .Values.meta.serviceAccountName }}
+      automountServiceAccountToken: {{ .Values.meta.automountServiceAccountToken | default false }}
+{{- end }}
+{{- if eq .Values.db.type "internal" }}
+      initContainers:
+      - name: db-ready
+        image: postgres:15-alpine
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          until pg_isready -h $(DB_HOST) -p $(DB_PORT) -U $(DB_USER); do
+          echo "Waiting for database to start..."
+          sleep 2
+          done
+        - echo "Database is ready"
+        env:
+        - name: DB_HOST
+          value: {{ template "supabase.db" . }}
+        - name: DB_PORT
+          value: "{{ template "supabase.db.port" . }}"
+        - name: DB_USER
+          value: {{ template "supabase.db.username" . }}
+{{- end }}
+      containers:
+      - name: meta
+        image: {{ .Values.meta.image.repository }}:{{ .Values.meta.image.tag }}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PG_META_PORT
+          value: "8080"
+        - name: PG_META_DB_HOST
+          value: {{ template "supabase.db" . }}
+        - name: PG_META_DB_PORT
+          value: "{{ template "supabase.db.port" . }}"
+        - name: PG_META_DB_USER
+          value: {{ template "supabase.db.username" . }}
+        - name: PG_META_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "supabase.db.secretRef" . }}
+              key: dbPassword
+        - name: PG_META_DB_NAME
+          value: {{ template "supabase.db.database" . }}
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+{{- if .Values.meta.resources }}
+        resources:
+{{ toYaml .Values.meta.resources | indent 10 }}
+{{- end }}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+{{- end }}
