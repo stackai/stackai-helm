@@ -1,7 +1,6 @@
 # StackAI Helm Charts
 
 [![Release Charts](https://github.com/stackai/stackai-helm/actions/workflows/release.yml/badge.svg)](https://github.com/stackai/stackai-helm/actions/workflows/release.yml)
-[![Test Charts](https://github.com/stackai/stackai-helm/actions/workflows/test-charts.yml/badge.svg)](https://github.com/stackai/stackai-helm/actions/workflows/test-charts.yml)
 
 Official Helm charts for StackAI - the complete AI development platform. Deploy StackAI infrastructure and applications on Kubernetes with ease.
 
