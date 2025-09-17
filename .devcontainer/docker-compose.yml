@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  stackai-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker-host.sock
+      - stackai-k8s-data:/var/lib/docker
+      - stackai-kube-config:/home/vscode/.kube
+      - stackai-helm-cache:/home/vscode/.cache/helm
+    ports:
+      - "8080:8080"   # ArgoCD UI
+      - "3000:3000"   # Supabase Studio
+      - "8000:8000"   # Supabase API Gateway
+      - "6379:6379"   # Redis
+      - "27017:27017" # MongoDB
+      - "8081:8081"   # Weaviate
+      - "7233:7233"   # Temporal Frontend
+      - "8088:8088"   # Temporal Web UI
+      - "8082:8082"   # Unstructured API
+      - "80:80"       # Nginx Ingress HTTP
+      - "443:443"     # Nginx Ingress HTTPS
+    environment:
+      - KUBECONFIG=/home/vscode/.kube/config
+      - HELM_CACHE_HOME=/home/vscode/.cache/helm
+      - HELM_CONFIG_HOME=/home/vscode/.config/helm
+      - HELM_DATA_HOME=/home/vscode/.local/share/helm
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    tmpfs:
+      - /tmp
+      - /run
+    command: sleep infinity
+
+volumes:
+  stackai-k8s-data:
+  stackai-kube-config:
+  stackai-helm-cache:
