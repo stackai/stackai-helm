@@ -1,0 +1,19 @@
+{{- if .Values.unstructured.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "unstructured.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unstructured.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.unstructured.service.type }}
+  ports:
+    - port: {{ .Values.unstructured.service.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "unstructured.selectorLabels" . | nindent 4 }}
+{{- end }}

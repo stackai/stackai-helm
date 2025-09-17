@@ -1,0 +1,139 @@
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Unstructured API Configuration
+unstructured:
+  enabled: true
+  image:
+    repository: downloads.unstructured.io/unstructured-io/unstructured-api
+    pullPolicy: IfNotPresent
+    tag: "0.0.80"
+
+  # Replica Configuration
+  replicaCount: 1
+
+  # Service Configuration
+  service:
+    type: ClusterIP
+    ports:
+      http: 8000
+
+  # Resources
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 200m
+    limits:
+      memory: 1Gi
+      cpu: 1000m
+
+  # Environment Configuration
+  env:
+    # Application settings
+    DEBUG: "false"
+    ENVIRONMENT: "production"
+    LOG_LEVEL: "INFO"
+
+    # Unstructured specific environment variables
+    UNSTRUCTURED_PARALLEL_MODE_ENABLED: "false"
+    UNSTRUCTURED_PARALLEL_MODE_URL: ""
+    UNSTRUCTURED_PARALLEL_MODE_THREADS: "3"
+    UNSTRUCTURED_PARALLEL_MODE_SPLIT_SIZE: "1"
+    UNSTRUCTURED_PARALLEL_MODE_RETRY_ATTEMPTS: "2"
+    
+    # Optional API key for Unstructured API (if needed)
+    UNSTRUCTURED_API_KEY: ""
+    
+    # Optional database URL (if needed for persistence)
+    DATABASE_URL: ""
+
+  # Security Context
+  securityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+
+  # Pod Security Context
+  podSecurityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+
+  # Node Selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Affinity
+  affinity: {}
+
+  # Liveness and Readiness Probes
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /general/v0/general
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /general/v0/general
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+  hosts:
+    - host: unstructured-api.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: unstructured-tls
+      hosts:
+        - unstructured-api.yourdomain.com
+
+# External Secrets Configuration (disabled for public image)
+externalSecrets:
+  enabled: false
+
+# Extra objects to be created
+extraObjects: []

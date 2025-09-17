@@ -1,0 +1,70 @@
+{{- if .Values.unstructured.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "unstructured.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unstructured.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.unstructured.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "unstructured.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "unstructured.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "unstructured.serviceAccountName" $ }}
+      {{- end }}
+      {{- with .Values.unstructured.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.unstructured.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.unstructured.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.unstructured.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: unstructured
+          image: "{{ .Values.unstructured.image.repository }}:{{ .Values.unstructured.image.tag }}"
+          imagePullPolicy: {{ .Values.unstructured.image.pullPolicy }}
+          {{- with .Values.unstructured.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            {{- range $key, $value := .Values.unstructured.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.unstructured.service.ports.http }}
+              protocol: TCP
+          {{- with .Values.unstructured.livenessProbe }}
+          {{- if .enabled }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.unstructured.readinessProbe }}
+          {{- if .enabled }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.unstructured.resources | nindent 12 }}
+{{- end }}
