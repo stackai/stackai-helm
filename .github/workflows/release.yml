@@ -202,8 +202,9 @@ jobs:
         run: |
           BRANCH_NAME="build-${{ steps.get-version.outputs.version }}"
 
-          # Add all files
-          git add index.yaml .cr-release-packages/ .gitignore _config.yml .nojekyll README.md
+          # Add all files (force add the Helm files since we want them in the repository)
+          git add -f index.yaml .cr-release-packages/
+          git add .gitignore _config.yml .nojekyll README.md
 
           # Commit changes
           git commit -m "chore: build helm repository for ${{ steps.get-version.outputs.version }}"
