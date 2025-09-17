@@ -93,4 +93,3 @@ Official StackAI Unstructured API Helm chart.
 | unstructured.service.ports.http | int | `8000` |  |
 | unstructured.service.type | string | `"ClusterIP"` |  |
 | unstructured.tolerations | list | `[]` |  |
-

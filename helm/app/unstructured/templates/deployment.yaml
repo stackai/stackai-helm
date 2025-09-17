@@ -32,9 +32,9 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.unstructured.securityContext }}
+      {{- if .Values.unstructured.securityContext.enabled }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
+        {{- omit .Values.unstructured.securityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       containers:
         - name: unstructured
@@ -53,17 +53,13 @@ spec:
             - name: http
               containerPort: {{ .Values.unstructured.service.ports.http }}
               protocol: TCP
-          {{- with .Values.unstructured.livenessProbe }}
-          {{- if .enabled }}
+          {{- if .Values.unstructured.livenessProbe.enabled }}
           livenessProbe:
-            {{- toYaml . | nindent 12 }}
+            {{- omit .Values.unstructured.livenessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
-          {{- end }}
-          {{- with .Values.unstructured.readinessProbe }}
-          {{- if .enabled }}
+          {{- if .Values.unstructured.readinessProbe.enabled }}
           readinessProbe:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- omit .Values.unstructured.readinessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.unstructured.resources | nindent 12 }}

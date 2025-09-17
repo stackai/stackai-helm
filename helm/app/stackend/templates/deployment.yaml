@@ -73,17 +73,13 @@ spec:
             - name: http
               containerPort: {{ .Values.stackend.service.ports.http }}
               protocol: TCP
-          {{- with .Values.stackend.livenessProbe }}
-          {{- if .enabled }}
+          {{- if .Values.stackend.livenessProbe.enabled }}
           livenessProbe:
-            {{- toYaml . | nindent 12 }}
+            {{- omit .Values.stackend.livenessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
-          {{- end }}
-          {{- with .Values.stackend.readinessProbe }}
-          {{- if .enabled }}
+          {{- if .Values.stackend.readinessProbe.enabled }}
           readinessProbe:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- omit .Values.stackend.readinessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.stackend.resources | nindent 12 }}
