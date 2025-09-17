@@ -126,6 +126,24 @@ jobs:
             echo "No index file created"
           fi
 
+      - name: Setup gh-pages branch
+        run: |
+          # Check if gh-pages branch exists
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            echo "gh-pages branch exists, checking out"
+            # Stash any uncommitted changes
+            git stash || echo "No changes to stash"
+            git checkout gh-pages
+            git pull origin gh-pages
+          else
+            echo "gh-pages branch does not exist, creating it"
+            # Stash any uncommitted changes
+            git stash || echo "No changes to stash"
+            git checkout --orphan gh-pages
+            git rm -rf .
+          fi
+
+
       - name: Create Jekyll configuration
         run: |
           # Create .gitignore to exclude Helm files from Jekyll processing
@@ -151,19 +169,6 @@ jobs:
 
           # Create .nojekyll file to disable Jekyll processing
           touch .nojekyll
-
-      - name: Setup gh-pages branch
-        run: |
-          # Check if gh-pages branch exists
-          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
-            echo "gh-pages branch exists, checking out"
-            git checkout gh-pages
-            git pull origin gh-pages
-          else
-            echo "gh-pages branch does not exist, creating it"
-            git checkout --orphan gh-pages
-            git rm -rf .
-          fi
 
       - name: Commit and push index and packages
         run: |
