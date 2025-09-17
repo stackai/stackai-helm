@@ -18,7 +18,7 @@ jobs:
       app-charts: ${{ steps.changes.outputs.app-charts }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -68,7 +68,7 @@ jobs:
         chart: ${{ fromJson(needs.detect-changes.outputs.infra-charts) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -108,7 +108,7 @@ jobs:
         chart: ${{ fromJson(needs.detect-changes.outputs.app-charts) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -145,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
