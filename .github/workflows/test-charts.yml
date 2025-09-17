@@ -16,6 +16,8 @@ jobs:
       charts: ${{ steps.changes.outputs.charts }}
       infra-charts: ${{ steps.changes.outputs.infra-charts }}
       app-charts: ${{ steps.changes.outputs.app-charts }}
+      infra-charts-json: ${{ steps.changes.outputs.infra-charts-json }}
+      app-charts-json: ${{ steps.changes.outputs.app-charts-json }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -54,9 +56,24 @@ jobs:
           all_charts="$infra_charts $app_charts"
           all_charts=$(echo $all_charts | xargs) # trim whitespace
 
+          # Convert space-separated strings to JSON arrays for matrix strategy
+          if [[ -n "$infra_charts" ]]; then
+            infra_charts_json=$(echo "$infra_charts" | tr ' ' '\n' | jq -R . | jq -s .)
+          else
+            infra_charts_json="[]"
+          fi
+
+          if [[ -n "$app_charts" ]]; then
+            app_charts_json=$(echo "$app_charts" | tr ' ' '\n' | jq -R . | jq -s .)
+          else
+            app_charts_json="[]"
+          fi
+
           echo "charts=$all_charts" >> $GITHUB_OUTPUT
           echo "infra-charts=$infra_charts" >> $GITHUB_OUTPUT
           echo "app-charts=$app_charts" >> $GITHUB_OUTPUT
+          echo "infra-charts-json=$infra_charts_json" >> $GITHUB_OUTPUT
+          echo "app-charts-json=$app_charts_json" >> $GITHUB_OUTPUT
 
   # Job to test infrastructure charts
   test-infra:
@@ -65,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart: ${{ fromJson(needs.detect-changes.outputs.infra-charts) }}
+        chart: ${{ fromJson(needs.detect-changes.outputs.infra-charts-json) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -105,7 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart: ${{ fromJson(needs.detect-changes.outputs.app-charts) }}
+        chart: ${{ fromJson(needs.detect-changes.outputs.app-charts-json) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -161,14 +178,16 @@ jobs:
           fi
 
       - name: Send Test Summary
+        if: github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v4
         with:
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## 🧪 Helm Charts Test Summary
             ### Infrastructure Charts Tested:
-            ${needs.detect-changes.outputs.infra-charts}
+            ${{ needs.detect-changes.outputs.infra-charts }}
             ### Application Charts Tested:
-            ${needs.detect-changes.outputs.app-charts}
+            ${{ needs.detect-changes.outputs.app-charts }}
             ### Test Results:
             - ✅ Chart linting passed
             - ✅ Template rendering passed
