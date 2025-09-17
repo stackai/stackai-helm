@@ -1,6 +1,53 @@
+# Chart Releaser Configuration for StackAI Helm Charts
+# This configuration enables separate releases for each chart module
+
 owner: stackai
 git-repo: stackai-helm
 package-path: .cr-release-packages
 index-path: index.yaml
 pages-branch: gh-pages
 charts-repo: https://stackai.github.io/stackai-helm/
+
+# Chart directories to scan for charts
+# Each subdirectory in these paths will be treated as a separate chart
+charts-dirs:
+  - helm/infra
+  - helm/app
+
+# Chart name patterns (optional)
+# If not specified, directory names will be used as chart names
+chart-name-pattern: "stackai-{{ .Name }}"
+
+# Release name pattern
+release-name-pattern: "stackai-{{ .Name }}"
+
+# Chart versioning strategy
+version-strategy: "semantic"
+
+# Pre-release handling
+prerelease: false
+
+# Skip charts that haven't changed
+skip-existing: true
+
+# Generate changelog
+generate-changelog: true
+
+# Commit message template
+commit-message-template: "chore: release {{ .Name }} {{ .Version }}"
+
+# Tag template
+tag-template: "{{ .Name }}-{{ .Version }}"
+
+# Release notes template
+release-notes-template: |
+  ## Changes in {{ .Name }} {{ .Version }}
+
+  {{ .Changes }}
+
+  ## Installation
+  ```bash
+  helm repo add stackai https://stackai.github.io/stackai-helm/
+  helm repo update
+  helm install {{ .Name }} stackai/{{ .Name }}
+  ```
