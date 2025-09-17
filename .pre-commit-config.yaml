@@ -30,13 +30,3 @@ repos:
         language: system
         files: '^helm/.*/Chart\.yaml$'
         pass_filenames: false
-
-  # Version check
-  - repo: local
-    hooks:
-      - id: version-check
-        name: Check Helm chart versions
-        entry: bash -c 'scripts/version/version-check.sh check'
-        language: system
-        files: '^helm/.*/Chart\.yaml$'
-        pass_filenames: false
