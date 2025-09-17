@@ -1,0 +1,44 @@
+# MongoDB - Local Development
+namespace:
+  create: true
+  name: "mongodb"
+
+mongodb:
+  enabled: true
+  replicaCount: 1
+  auth:
+    enabled: true
+    rootUsername: admin
+    rootPassword: "mongodb123"
+    rootDatabase: admin
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+  configuration: |
+    storage:
+      dbPath: /data/db
+      journal:
+        enabled: true
+      wiredTiger:
+        engineConfig:
+          cacheSizeGB: 0.5
+    systemLog:
+      destination: file
+      logAppend: true
+      path: /var/log/mongodb/mongod.log
+      logRotate: reopen
+      verbosity: 0
+    net:
+      port: 27017
+      bindIpAll: true
+    operationProfiling:
+      slowOpThresholdMs: 100
+      mode: slowOp

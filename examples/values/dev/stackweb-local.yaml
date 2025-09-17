@@ -1,0 +1,39 @@
+# Stackweb Frontend - Local Development
+namespace:
+  create: true
+  name: "stackweb"
+
+stackweb:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "your-acr.azurecr.io/stackai/stackweb"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+  env:
+    NODE_ENV: "development"
+    NEXT_PUBLIC_API_URL: "http://api.localhost"
+    secrets:
+      useExternalSecrets: false
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+externalSecrets:
+  enabled: false
