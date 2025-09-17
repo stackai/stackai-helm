@@ -1,0 +1,10 @@
+repos:
+  # Helm values documentation generation
+  - repo: local
+    hooks:
+      - id: helm-docs
+        name: Generate Helm documentation
+        entry: bash -c 'scripts/docs/generate-helm-docs.sh'
+        language: system
+        files: '^helm/.*/values\.yaml$'
+        pass_filenames: false

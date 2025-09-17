@@ -1,0 +1,23 @@
+apiVersion: v2
+name: stackai-weaviate
+description: Official StackAI Weaviate Helm chart.
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+icon: https://stackai.com/favicon.ico
+keywords:
+  - stackai
+  - weaviate
+  - helm
+  - chart
+  - azure
+  - kubernetes
+  - aks
+  - acr
+  - keyvault
+home: https://stackai.com
+sources:
+  - https://github.com/stackai/stackai-helm
+maintainers:
+  - name: StackAI
+    email: support@stackai.com

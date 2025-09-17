@@ -1,0 +1,74 @@
+# stackai-weaviate
+
+![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+
+Official StackAI Weaviate Helm chart.
+
+**Homepage:** <https://stackai.com>
+
+## Maintainers
+
+| Name | Email | Url |
+| ---- | ------ | --- |
+| StackAI | <support@stackai.com> |  |
+
+## Source Code
+
+* <https://github.com/stackai/stackai-helm>
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| extraObjects | list | `[]` |  |
+| fullnameOverride | string | `""` |  |
+| nameOverride | string | `""` |  |
+| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.automount | bool | `true` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.name | string | `""` |  |
+| weaviate.affinity | object | `{}` |  |
+| weaviate.configuration | string | `"QUERY_DEFAULTS_LIMIT=25\nAUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true\nPERSISTENCE_DATA_PATH=/var/lib/weaviate\nDEFAULT_VECTORIZER_MODULE=none\nENABLE_MODULES=text2vec-cohere,text2vec-huggingface,text2vec-palm,text2vec-openai,generative-openai,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere,qna-openai\nCLUSTER_HOSTNAME=node1\n"` |  |
+| weaviate.enabled | bool | `true` |  |
+| weaviate.image.pullPolicy | string | `"IfNotPresent"` |  |
+| weaviate.image.repository | string | `"semitechnologies/weaviate"` |  |
+| weaviate.image.tag | string | `"1.25.0"` |  |
+| weaviate.livenessProbe.enabled | bool | `true` |  |
+| weaviate.livenessProbe.failureThreshold | int | `3` |  |
+| weaviate.livenessProbe.httpGet.path | string | `"/v1/meta"` |  |
+| weaviate.livenessProbe.httpGet.port | string | `"weaviate"` |  |
+| weaviate.livenessProbe.initialDelaySeconds | int | `30` |  |
+| weaviate.livenessProbe.periodSeconds | int | `10` |  |
+| weaviate.livenessProbe.successThreshold | int | `1` |  |
+| weaviate.livenessProbe.timeoutSeconds | int | `5` |  |
+| weaviate.nodeSelector | object | `{}` |  |
+| weaviate.persistence.accessMode | string | `"ReadWriteOnce"` |  |
+| weaviate.persistence.enabled | bool | `true` |  |
+| weaviate.persistence.size | string | `"20Gi"` |  |
+| weaviate.persistence.storageClass | string | `""` |  |
+| weaviate.podSecurityContext.enabled | bool | `true` |  |
+| weaviate.podSecurityContext.fsGroup | int | `1000` |  |
+| weaviate.podSecurityContext.runAsGroup | int | `1000` |  |
+| weaviate.podSecurityContext.runAsNonRoot | bool | `true` |  |
+| weaviate.podSecurityContext.runAsUser | int | `1000` |  |
+| weaviate.readinessProbe.enabled | bool | `true` |  |
+| weaviate.readinessProbe.failureThreshold | int | `3` |  |
+| weaviate.readinessProbe.httpGet.path | string | `"/v1/meta"` |  |
+| weaviate.readinessProbe.httpGet.port | string | `"weaviate"` |  |
+| weaviate.readinessProbe.initialDelaySeconds | int | `5` |  |
+| weaviate.readinessProbe.periodSeconds | int | `5` |  |
+| weaviate.readinessProbe.successThreshold | int | `1` |  |
+| weaviate.readinessProbe.timeoutSeconds | int | `5` |  |
+| weaviate.replicaCount | int | `1` |  |
+| weaviate.resources.limits.cpu | string | `"1000m"` |  |
+| weaviate.resources.limits.memory | string | `"2Gi"` |  |
+| weaviate.resources.requests.cpu | string | `"200m"` |  |
+| weaviate.resources.requests.memory | string | `"512Mi"` |  |
+| weaviate.securityContext.enabled | bool | `true` |  |
+| weaviate.securityContext.fsGroup | int | `1000` |  |
+| weaviate.securityContext.runAsGroup | int | `1000` |  |
+| weaviate.securityContext.runAsUser | int | `1000` |  |
+| weaviate.service.ports.grpc | int | `50051` |  |
+| weaviate.service.ports.weaviate | int | `8080` |  |
+| weaviate.service.type | string | `"ClusterIP"` |  |
+| weaviate.tolerations | list | `[]` |  |

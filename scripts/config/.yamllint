@@ -1,0 +1,116 @@
+# YAML Lint configuration
+# https://yamllint.readthedocs.io/en/stable/configuration.html
+
+# Extends default rules
+extends: default
+
+# Rules configuration
+rules:
+  # Line length
+  line-length:
+    max: 120
+    level: warning
+
+  # Indentation
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+    level: error
+
+  # Comments
+  comments:
+    min-spaces-from-content: 1
+    level: warning
+
+  # Comments indentation
+  comments-indentation: disable
+
+  # Document start
+  document-start:
+    present: false
+    level: warning
+
+  # Document end
+  document-end:
+    present: false
+    level: warning
+
+  # Empty lines
+  empty-lines:
+    max: 2
+    max-start: 1
+    max-end: 1
+    level: warning
+
+  # Empty values
+  empty-values:
+    forbid-in-block-mappings: true
+    forbid-in-flow-mappings: true
+    level: error
+
+  # Hyphens
+  hyphens:
+    max-spaces-after: 1
+    level: error
+
+  # Key ordering
+  key-ordering: disable
+
+  # Key duplicates
+  key-duplicates:
+    level: error
+
+  # Octal values
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+    level: error
+
+  # Quoted strings
+  quoted-strings:
+    quote-type: single
+    check-keys: false
+    level: warning
+
+  # Truthy values
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off', 'yes', 'no']
+    check-keys: false
+    level: error
+
+  # Bracket spacing
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+    level: error
+
+  # Braces spacing
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+    level: error
+
+  # Colons
+  colons:
+    max-spaces-before: 0
+    max-spaces-after: 1
+    level: error
+
+  # Commas
+  commas:
+    max-spaces-before: 0
+    max-spaces-after: 1
+    level: error
+
+  # Note: dashes, dots, question-marks, and semicolons are not valid yamllint rules
+
+  # Trailing spaces
+  trailing-spaces:
+    level: error
+
+  # Note: flow-sequence and flow-mapping are not valid yamllint rules

@@ -1,4 +1,5 @@
 repos:
+  # Basic pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -7,3 +8,35 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: detect-private-key
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  # Helm chart linting and validation
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.30
+    hooks:
+      - id: helmlint
+        args: ["--strict"]
+        files: '^helm/.*/Chart\.yaml$'
+        exclude: '^helm/.*/templates/.*\.yaml$'
+
+  # Helm template validation
+  - repo: local
+    hooks:
+      - id: helm-template-test
+        name: Helm template test
+        entry: bash -c 'scripts/lint/helm-template-test.sh'
+        language: system
+        files: '^helm/.*/Chart\.yaml$'
+        pass_filenames: false
+
+  # Version check
+  - repo: local
+    hooks:
+      - id: version-check
+        name: Check Helm chart versions
+        entry: bash -c 'scripts/version/version-check.sh check'
+        language: system
+        files: '^helm/.*/Chart\.yaml$'
+        pass_filenames: false

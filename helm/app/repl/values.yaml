@@ -1,0 +1,154 @@
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Repl API Configuration
+repl:
+  enabled: true
+  image:
+    repository: "your-acr.azurecr.io/stackai/repl"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  # Replica Configuration
+  replicaCount: 1
+
+  # Service Configuration
+  service:
+    type: ClusterIP
+    ports:
+      http: 8000
+
+  # Resources
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+  # Environment Configuration
+  env:
+    # Application settings
+    DEBUG: "false"
+    ENVIRONMENT: "production"
+    LOG_LEVEL: "INFO"
+
+    # Database settings (will be overridden by secrets)
+    DATABASE_URL: ""
+
+    # Redis settings (will be overridden by secrets)
+    REDIS_URL: ""
+
+    # External secrets configuration
+    secrets:
+      # Use external secrets from Azure Key Vault
+      useExternalSecrets: true
+      # External secret name
+      externalSecretName: "repl-secrets"
+      # Secret store class
+      secretStoreClass: "azure-keyvault"
+      # Secret store name
+      secretStoreName: "azure-keyvault-store"
+
+  # Security Context
+  securityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+
+  # Pod Security Context
+  podSecurityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+
+  # Node Selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Affinity
+  affinity: {}
+
+  # Liveness and Readiness Probes
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /health
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /health
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: repl-api.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: repl-tls
+      hosts:
+        - repl-api.yourdomain.com
+
+# External Secrets Configuration
+externalSecrets:
+  enabled: true
+  # External secret store configuration
+  secretStore:
+    name: "azure-keyvault-store"
+    class: "azure-keyvault"
+    # Azure Key Vault configuration
+    vaultUrl: "https://your-keyvault.vault.azure.net/"
+    tenantId: "your-tenant-id"
+    # Service principal for authentication
+    servicePrincipal:
+      clientId: "your-client-id"
+      # Use external secret for client secret
+      clientSecretRef:
+        name: "azure-keyvault-credentials"
+        key: "client-secret"
+
+# Extra objects to be created
+extraObjects: []

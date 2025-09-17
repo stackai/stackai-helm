@@ -1,0 +1,235 @@
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+externalURL: "https://example.com"
+
+jwt:
+  exp: 3600
+  secret: "your-super-secret-jwt-token-with-at-least-32-characters-long"
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE"
+  serviceKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q"
+  # if using existing secret, the keys must be "secret", "anonKey" and "serviceKey"
+  existingSecret: ""
+db:
+  # if external database is used, set "type" to "external"
+  # and fill the connection information in "external" section
+  type: internal
+  internal:
+    image:
+      repository: supabase/postgres
+      tag: 15.8.1.069
+    # set the service account to be used, default if left empty
+    serviceAccountName: ""
+    # mount the service account token
+    automountServiceAccountToken: false
+    # resources:
+    #  requests:
+    #    memory: 256Mi
+    #    cpu: 100m
+    # The initial superuser password for internal database
+    password: "your-super-secret-and-long-postgres-password"
+    # if using existing secret, the key must be "dbPassword"
+    existingSecret: ""
+  external:
+    host: "192.168.0.1"
+    port: "5432"
+    username: "postgres"
+    password: "password"
+    database: "postgres"
+    # if using existing secret, the key must be "dbPassword"
+    existingSecret: ""
+    # "disable" - No SSL
+    # "require" - Always SSL (skip verification)
+    # "verify-ca" - Always SSL (verify that the certificate presented by the
+    # server was signed by a trusted CA)
+    # "verify-full" - Always SSL (verify that the certification presented by the
+    # server was signed by a trusted CA and the server host name matches the one
+    # in the certificate)
+    sslmode: "disable"
+
+studio:
+  image:
+    repository: supabase/studio
+    tag: 2025.05.05-sha-3c3fe9b
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
+  # mount the service account token
+  automountServiceAccountToken: false
+  replicas: 1
+  revisionHistoryLimit: 10
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  username: supabase
+  password: "this_password_is_insecure_and_should_be_updated"
+  # if using existing secret, the key must be "password"
+  existingSecret: ""
+
+kong:
+  image:
+    repository: kong
+    tag: 2.8.1
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
+  # mount the service account token
+  automountServiceAccountToken: false
+  replicas: 1
+  revisionHistoryLimit: 10
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  ingress:
+    enabled: false
+    class: ""
+    tls:
+      enabled: false
+      secret: ""
+    hosts: []
+    annotations: {}
+
+auth:
+  enabled: true
+  image:
+    repository: supabase/gotrue
+    tag: v2.171.0
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
+  # mount the service account token
+  automountServiceAccountToken: false
+  replicas: 1
+  revisionHistoryLimit: 10
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  additionalDomains: ""
+  disableSignup: false
+  jwt:
+    adminRoles: service_role
+    aud: authenticated
+    defaultGroup: authenticated
+  db:
+    username: supabase_auth_admin
+  email:
+    enabled: false
+    autoConfirm: false
+    anonymousUsers: false
+    adminEmail: admin@example.com
+    senderName: fake_sender
+    host: supabase-mail
+    port: 2500
+    username: fake_mail_user
+    password: fake_mail_password
+    existingSecret: ""
+    #urlPaths:
+    #  invite: /auth/v1/verify
+    #  recovery: /auth/v1/verify
+    #  confirmation: /auth/v1/verify
+    #  change: /auth/v1/verify
+  phone:
+    enabled: false
+    autoConfirm: false
+
+meta:
+  enabled: true
+  image:
+    repository: supabase/postgres-meta
+    tag: v0.88.9
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
+  # mount the service account token
+  automountServiceAccountToken: false
+  replicas: 1
+  revisionHistoryLimit: 10
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+
+rest:
+  enabled: true
+  image:
+    repository: postgrest/postgrest
+    tag: v12.2.12
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
+  # mount the service account token
+  automountServiceAccountToken: false
+  replicas: 1
+  revisionHistoryLimit: 10
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  db:
+    username: authenticator
+    anonRole: anon
+    schemas: public,storage,graphql_public
+
+realtime:
+  enabled: true
+  image:
+    repository: supabase/realtime
+    tag: v2.34.47
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
+  # mount the service account token
+  automountServiceAccountToken: false
+  replicas: 1
+  revisionHistoryLimit: 10
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  selfHosted: true
+  # Set this to "-proto_dist inet6_tcp" when using on ipv6 network
+  erlAFlags: -proto_dist inet_tcp
+  dnsNodes: ""
+  rlimitNoFile: 1000
+  secretKeyBase: UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq
+  existingSecret: ""
+  db:
+    username: supabase_admin
+    encryptionKey: supabaserealtime
+    existingSecret: ""
+    afterConnectQuery: SET search_path TO _realtime
+
+storage:
+  enabled: false
+
+functions:
+  enabled: true
+  image:
+    repository: supabase/edge-runtime
+    tag: v1.67.4
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
+  # mount the service account token
+  automountServiceAccountToken: false
+  replicas: 1
+  revisionHistoryLimit: 10
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  verifyJWT: false
+
+analytics:
+  enabled: false
+
+extraObjects: []

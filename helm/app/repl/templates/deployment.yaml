@@ -1,0 +1,90 @@
+{{- if .Values.repl.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "repl.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "repl.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.repl.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "repl.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "repl.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "repl.serviceAccountName" $ }}
+      {{- end }}
+      {{- with .Values.repl.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.repl.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.repl.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.repl.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: repl
+          image: "{{ .Values.repl.image.repository }}:{{ .Values.repl.image.tag }}"
+          imagePullPolicy: {{ .Values.repl.image.pullPolicy }}
+          {{- with .Values.repl.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            {{- range $key, $value := .Values.repl.env }}
+            {{- if ne $key "secrets" }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.repl.env.secrets.useExternalSecrets }}
+            # Environment variables from external secrets
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "repl.externalSecret" . }}
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "repl.externalSecret" . }}
+                  key: redis-url
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "repl.externalSecret" . }}
+                  key: secret-key
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.repl.service.ports.http }}
+              protocol: TCP
+          {{- with .Values.repl.livenessProbe }}
+          {{- if .enabled }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.repl.readinessProbe }}
+          {{- if .enabled }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.repl.resources | nindent 12 }}
+{{- end }}

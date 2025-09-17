@@ -1,0 +1,51 @@
+# MongoDB - Production
+mongodb:
+  enabled: true
+  replicaCount: 1
+  auth:
+    enabled: true
+    rootUsername: admin
+    # Use external secret for production
+    existingSecret: "mongodb-secret"
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: "managed-csi-premium"
+  resources:
+    requests:
+      memory: 2Gi
+      cpu: 500m
+    limits:
+      memory: 4Gi
+      cpu: 2000m
+  configuration: |
+    storage:
+      dbPath: /data/db
+      journal:
+        enabled: true
+      wiredTiger:
+        engineConfig:
+          cacheSizeGB: 2
+          journalCompressor: snappy
+          directoryForIndexes: false
+        collectionConfig:
+          blockCompressor: snappy
+        indexConfig:
+          prefixCompression: true
+    systemLog:
+      destination: file
+      logAppend: true
+      path: /var/log/mongodb/mongod.log
+      logRotate: reopen
+      verbosity: 0
+    net:
+      port: 27017
+      bindIpAll: true
+      maxIncomingConnections: 1000
+    operationProfiling:
+      slowOpThresholdMs: 50
+      mode: slowOp
+    replication:
+      oplogSizeMB: 1024
+    security:
+      authorization: enabled

@@ -1,0 +1,19 @@
+{{- if and .Values.weaviate.enabled .Values.weaviate.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "weaviate.fullname" . }}-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "weaviate.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.weaviate.persistence.accessMode }}
+  {{- if .Values.weaviate.persistence.storageClass }}
+  storageClassName: {{ .Values.weaviate.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.weaviate.persistence.size }}
+{{- end }}

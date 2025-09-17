@@ -1,0 +1,53 @@
+# Stackend Backend - Production
+stackend:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: "your-acr.azurecr.io/stackai/stackend"
+    tag: "v1.0.0"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 200m
+    limits:
+      memory: 1Gi
+      cpu: 1000m
+  env:
+    DEBUG: "false"
+    ENVIRONMENT: "production"
+    LOG_LEVEL: "INFO"
+    secrets:
+      useExternalSecrets: true
+      externalSecretName: "stackend-secrets"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: api.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: stackend-tls
+      hosts:
+        - api.yourdomain.com
+
+externalSecrets:
+  enabled: true
+  secretStore:
+    name: "azure-keyvault-store"
+    class: "azure-keyvault"
+    vaultUrl: "https://your-keyvault.vault.azure.net/"
+    tenantId: "your-tenant-id"
+    servicePrincipal:
+      clientId: "your-client-id"
+      clientSecretRef:
+        name: "azure-keyvault-credentials"
+        key: "client-secret"

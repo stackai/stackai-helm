@@ -1,0 +1,19 @@
+{{- if .Values.repl.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "repl.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "repl.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.repl.service.type }}
+  ports:
+    - port: {{ .Values.repl.service.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "repl.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,13 @@
+{{- if .Values.redis.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "redis.config.configmap" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis.labels" . | nindent 4 }}
+data:
+  redis.conf: |
+{{ .Values.redis.configuration | nindent 4 }}
+{{- end }}

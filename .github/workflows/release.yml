@@ -1,12 +1,136 @@
-name: Release Charts
+name: Release StackAI Helm Charts
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      chart_name:
+        description: "Specific chart to release (leave empty for all)"
+        required: false
+        type: string
 
 jobs:
-  release:
+  # Job to detect which charts have changed
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      charts: ${{ steps.changes.outputs.charts }}
+      infra-charts: ${{ steps.changes.outputs.infra-charts }}
+      app-charts: ${{ steps.changes.outputs.app-charts }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed charts
+        id: changes
+        run: |
+          # Get list of changed files
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.chart_name }}" ]; then
+            # Manual trigger with specific chart
+            echo "charts=${{ github.event.inputs.chart_name }}" >> $GITHUB_OUTPUT
+            echo "infra-charts=" >> $GITHUB_OUTPUT
+            echo "app-charts=" >> $GITHUB_OUTPUT
+          else
+            # Detect changes in helm directories
+            changed_files=$(git diff --name-only HEAD~1 HEAD)
+            infra_charts=""
+            app_charts=""
+
+            # Check infrastructure charts
+            for chart in mongo redis weaviate supabase nginx; do
+              if echo "$changed_files" | grep -q "helm/infra/$chart/"; then
+                infra_charts="$infra_charts $chart"
+              fi
+            done
+
+            # Check application charts
+            for chart in stackend stackweb celery repl; do
+              if echo "$changed_files" | grep -q "helm/app/$chart/"; then
+                app_charts="$app_charts $chart"
+              fi
+            done
+
+            # Combine all charts
+            all_charts="$infra_charts $app_charts"
+            all_charts=$(echo $all_charts | xargs) # trim whitespace
+
+            echo "charts=$all_charts" >> $GITHUB_OUTPUT
+            echo "infra-charts=$infra_charts" >> $GITHUB_OUTPUT
+            echo "app-charts=$app_charts" >> $GITHUB_OUTPUT
+          fi
+
+  # Job to release infrastructure charts
+  release-infra:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.infra-charts != ''
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chart: ${{ fromJson(needs.detect-changes.outputs.infra-charts) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Run chart-releaser for ${{ matrix.chart }}
+        uses: helm/chart-releaser-action@v1.7.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          charts_dir: helm/infra
+          config: cr.yaml
+
+  # Job to release application charts
+  release-app:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.app-charts != ''
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chart: ${{ fromJson(needs.detect-changes.outputs.app-charts) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Run chart-releaser for ${{ matrix.chart }}
+        uses: helm/chart-releaser-action@v1.7.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          charts_dir: helm/app
+          config: cr.yaml
+
+  # Job to update index and create summary
+  update-index:
+    needs: [detect-changes, release-infra, release-app]
+    if: always() && (needs.detect-changes.outputs.infra-charts != '' || needs.detect-changes.outputs.app-charts != '')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,10 +143,33 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.7.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
         with:
-          charts_dir: charts
-          config: cr.yaml
+          version: v3.12.0
+
+      - name: Update Helm repository index
+        run: |
+          # Create or update the index for all charts
+          helm repo index .cr-release-packages --url https://stackai.github.io/stackai-helm/
+
+          # Commit and push the updated index
+          git add index.yaml
+          git commit -m "chore: update helm repository index" || exit 0
+          git push origin gh-pages
+
+      - name: Create release summary
+        run: |
+          echo "## 🚀 StackAI Helm Charts Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Infrastructure Charts Released:" >> $GITHUB_STEP_SUMMARY
+          echo "${{ needs.detect-changes.outputs.infra-charts }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Application Charts Released:" >> $GITHUB_STEP_SUMMARY
+          echo "${{ needs.detect-changes.outputs.app-charts }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo 'helm repo add stackai https://stackai.github.io/stackai-helm/' >> $GITHUB_STEP_SUMMARY
+          echo 'helm repo update' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
