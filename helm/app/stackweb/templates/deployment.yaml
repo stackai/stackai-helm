@@ -1,0 +1,85 @@
+{{- if .Values.stackweb.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackweb.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stackweb.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.stackweb.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "stackweb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "stackweb.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "stackweb.serviceAccountName" $ }}
+      {{- end }}
+      {{- with .Values.stackweb.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.stackweb.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.stackweb.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.stackweb.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: stackweb
+          image: "{{ .Values.stackweb.image.repository }}:{{ .Values.stackweb.image.tag }}"
+          imagePullPolicy: {{ .Values.stackweb.image.pullPolicy }}
+          {{- with .Values.stackweb.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            {{- range $key, $value := .Values.stackweb.env }}
+            {{- if ne $key "secrets" }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.stackweb.env.secrets.useExternalSecrets }}
+            # Environment variables from external secrets
+            - name: NEXT_PUBLIC_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "stackweb.externalSecret" . }}
+                  key: api-url
+            - name: NEXT_PUBLIC_APP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "stackweb.externalSecret" . }}
+                  key: app-url
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.stackweb.service.ports.http }}
+              protocol: TCP
+          {{- with .Values.stackweb.livenessProbe }}
+          {{- if .enabled }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.stackweb.readinessProbe }}
+          {{- if .enabled }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.stackweb.resources | nindent 12 }}
+{{- end }}
