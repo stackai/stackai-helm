@@ -11,9 +11,9 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-CONFIG_FILE="scripts/version-config.yaml"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+CONFIG_FILE="$SCRIPT_DIR/version-config.yaml"
 
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -164,6 +164,63 @@ show_version_summary() {
     fi
 }
 
+# Function to parse semantic version
+parse_version() {
+    local version="$1"
+    local major=$(echo "$version" | cut -d. -f1)
+    local minor=$(echo "$version" | cut -d. -f2)
+    local patch=$(echo "$version" | cut -d. -f3)
+    echo "$major $minor $patch"
+}
+
+# Function to increment version
+increment_version() {
+    local version="$1"
+    local bump_type="$2"
+
+    local major minor patch
+    read -r major minor patch <<< "$(parse_version "$version")"
+
+    case "$bump_type" in
+        "major")
+            major=$((major + 1))
+            minor=0
+            patch=0
+            ;;
+        "minor")
+            minor=$((minor + 1))
+            patch=0
+            ;;
+        "patch")
+            patch=$((patch + 1))
+            ;;
+        *)
+            print_error "Invalid bump type: $bump_type. Use major, minor, or patch."
+            return 1
+            ;;
+    esac
+
+    echo "$major.$minor.$patch"
+}
+
+# Function to update version in config file
+update_config_version() {
+    local category="$1"
+    local component="$2"
+    local version_type="$3"
+    local new_version="$4"
+
+    local config_path
+    if [[ -n "$component" && "$component" != "all" ]]; then
+        config_path=".${category}.components.${component}.${version_type}"
+    else
+        config_path=".${category}.${version_type}"
+    fi
+
+    # Update the config file
+    yq eval "$config_path = \"$new_version\"" -i "$CONFIG_FILE"
+}
+
 # Function to bump versions
 bump_version() {
     local bump_type="$1"
@@ -171,9 +228,111 @@ bump_version() {
 
     print_status "Bumping $bump_type version for $component..."
 
-    # This would require more complex logic to actually bump versions
-    # For now, just show what would be done
-    print_warning "Version bumping not yet implemented. Please update version-config.yaml manually."
+    # Validate bump type
+    if [[ ! "$bump_type" =~ ^(major|minor|patch)$ ]]; then
+        print_error "Invalid bump type: $bump_type. Use major, minor, or patch."
+        exit 1
+    fi
+
+    # Check if yq is available
+    check_yq
+
+    # Create backup of config file
+    cp "$CONFIG_FILE" "${CONFIG_FILE}.backup"
+    print_status "Created backup: ${CONFIG_FILE}.backup"
+
+    local updated_components=0
+
+    if [[ "$component" == "all" ]]; then
+        # Bump all categories
+        for category in "infrastructure" "application"; do
+            print_status "Processing $category category..."
+
+            # Get current chart version for this category
+            local current_chart_version=$(get_version ".${category}.chartVersion")
+            local new_chart_version=$(increment_version "$current_chart_version" "$bump_type")
+
+            # Update chart version for the category
+            update_config_version "$category" "" "chartVersion" "$new_chart_version"
+            print_success "$category chart version: $current_chart_version → $new_chart_version"
+
+            # Get current app version for this category
+            local current_app_version=$(get_version ".${category}.appVersion")
+            local new_app_version=$(increment_version "$current_app_version" "$bump_type")
+
+            # Update app version for the category
+            update_config_version "$category" "" "appVersion" "$new_app_version"
+            print_success "$category app version: $current_app_version → $new_app_version"
+
+            # Update individual components in this category
+            local components=$(yq eval ".${category}.components | keys | .[]" "$CONFIG_FILE")
+            for comp in $components; do
+                # Update component chart version
+                local current_comp_chart_version=$(get_version ".${category}.components.${comp}.chartVersion")
+                local new_comp_chart_version=$(increment_version "$current_comp_chart_version" "$bump_type")
+                update_config_version "$category" "$comp" "chartVersion" "$new_comp_chart_version"
+
+                # Update component app version
+                local current_comp_app_version=$(get_version ".${category}.components.${comp}.appVersion")
+                local new_comp_app_version=$(increment_version "$current_comp_app_version" "$bump_type")
+                update_config_version "$category" "$comp" "appVersion" "$new_comp_app_version"
+
+                print_success "$comp: chart $current_comp_chart_version → $new_comp_chart_version, app $current_comp_app_version → $new_comp_app_version"
+                ((updated_components++))
+            done
+        done
+    else
+        # Bump specific component
+        local category=""
+        local found=false
+
+        # Find which category the component belongs to
+        for cat in "infrastructure" "application"; do
+            if yq eval ".${cat}.components.${component}" "$CONFIG_FILE" | grep -q "null"; then
+                continue
+            else
+                category="$cat"
+                found=true
+                break
+            fi
+        done
+
+        if [[ "$found" == false ]]; then
+            print_error "Component '$component' not found in configuration"
+            exit 1
+        fi
+
+        print_status "Processing $component in $category category..."
+
+        # Update component chart version
+        local current_comp_chart_version=$(get_version ".${category}.components.${component}.chartVersion")
+        local new_comp_chart_version=$(increment_version "$current_comp_chart_version" "$bump_type")
+        update_config_version "$category" "$component" "chartVersion" "$new_comp_chart_version"
+
+        # Update component app version
+        local current_comp_app_version=$(get_version ".${category}.components.${component}.appVersion")
+        local new_comp_app_version=$(increment_version "$current_comp_app_version" "$bump_type")
+        update_config_version "$category" "$component" "appVersion" "$new_comp_app_version"
+
+        print_success "$component: chart $current_comp_chart_version → $new_comp_chart_version, app $current_comp_app_version → $new_comp_app_version"
+        ((updated_components++))
+    fi
+
+    # Update release information
+    local current_release_name=$(get_version ".release.name")
+    local new_release_version=$(increment_version "1.0.0" "$bump_type")  # This could be made more dynamic
+    local new_release_name="stackai-v${new_release_version}"
+    yq eval ".release.name = \"$new_release_name\"" -i "$CONFIG_FILE"
+    yq eval ".release.date = \"$(date +%Y-%m-%d)\"" -i "$CONFIG_FILE"
+
+    print_success "Updated release info: $current_release_name → $new_release_name"
+
+    # Now update all Chart.yaml files to match the new config
+    print_status "Updating Chart.yaml files..."
+    run_update_command
+
+    print_success "Version bump completed! Updated $updated_components components."
+    print_status "Configuration backup saved as: ${CONFIG_FILE}.backup"
 }
 
 # Function to show help
@@ -211,46 +370,56 @@ show_config() {
     fi
 }
 
+# Function to run the check command logic
+run_check_command() {
+    check_yq
+    print_header "🔍 Checking Helm Chart Versions"
+    echo ""
+
+    local failed_charts=()
+    local total_charts=0
+
+    while IFS= read -r chart_file; do
+        ((total_charts++))
+        if ! check_chart_version "$chart_file"; then
+            failed_charts+=("$chart_file")
+        fi
+    done < <(get_chart_files)
+
+    if [[ ${#failed_charts[@]} -eq 0 ]]; then
+        print_success "All $total_charts charts have correct versions!"
+    else
+        print_error "Found ${#failed_charts[@]} charts with incorrect versions"
+        exit 1
+    fi
+}
+
+# Function to run the update command logic
+run_update_command() {
+    check_yq
+    print_header "🔄 Updating Helm Chart Versions"
+    echo ""
+
+    local updated_charts=0
+
+    while IFS= read -r chart_file; do
+        update_chart_version "$chart_file"
+        ((updated_charts++))
+    done < <(get_chart_files)
+
+    print_success "Updated $updated_charts charts!"
+}
+
 # Main execution
 COMMAND="${1:-check}"
 
 case $COMMAND in
     check)
-        check_yq
-        print_header "🔍 Checking Helm Chart Versions"
-        echo ""
-
-        local failed_charts=()
-        local total_charts=0
-
-        while IFS= read -r chart_file; do
-            ((total_charts++))
-            if ! check_chart_version "$chart_file"; then
-                failed_charts+=("$chart_file")
-            fi
-        done < <(get_chart_files)
-
-        if [[ ${#failed_charts[@]} -eq 0 ]]; then
-            print_success "All $total_charts charts have correct versions!"
-        else
-            print_error "Found ${#failed_charts[@]} charts with incorrect versions"
-            exit 1
-        fi
+        run_check_command
         ;;
 
     update)
-        check_yq
-        print_header "🔄 Updating Helm Chart Versions"
-        echo ""
-
-        local updated_charts=0
-
-        while IFS= read -r chart_file; do
-            update_chart_version "$chart_file"
-            ((updated_charts++))
-        done < <(get_chart_files)
-
-        print_success "Updated $updated_charts charts!"
+        run_update_command
         ;;
 
     summary)
