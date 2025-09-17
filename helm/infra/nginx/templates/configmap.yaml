@@ -1,0 +1,34 @@
+{{- if .Values.controller.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx-ingress.controller" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx-ingress.labels" . | nindent 4 }}
+data:
+{{- range $key, $value := .Values.controller.config }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx-ingress.controller" . }}-tcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx-ingress.labels" . | nindent 4 }}
+data: {}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx-ingress.controller" . }}-udp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx-ingress.labels" . | nindent 4 }}
+data: {}
+{{- end }}
