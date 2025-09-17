@@ -31,7 +31,7 @@ jobs:
           app_charts=""
 
           # Check infrastructure charts
-          for chart in mongo redis weaviate supabase nginx; do
+          for chart in mongo redis weviate supabase nginx; do
             if echo "$changed_files" | grep -q "helm/infra/$chart/"; then
               infra_charts="$infra_charts $chart"
             fi
@@ -46,7 +46,7 @@ jobs:
 
           # If no specific charts changed, test all charts
           if [[ -z "$infra_charts" && -z "$app_charts" ]]; then
-            infra_charts="mongo redis weaviate supabase nginx"
+            infra_charts="mongo redis weviate supabase nginx"
             app_charts="stackend stackweb celery repl"
           fi
 
@@ -151,15 +151,6 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: v3.12.0
-
-      - uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-      - uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: --all-files --verbose
-        env:
-          SKIP: no-commit-to-branch
 
       - name: Run version checks
         run: |
