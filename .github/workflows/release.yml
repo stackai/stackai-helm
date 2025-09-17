@@ -41,7 +41,7 @@ jobs:
             app_charts=""
 
             # Check infrastructure charts
-            for chart in mongo redis weaviate supabase nginx; do
+            for chart in mongo redis weviate supabase nginx; do
               if echo "$changed_files" | grep -q "helm/infra/$chart/"; then
                 infra_charts="$infra_charts $chart"
               fi
@@ -63,8 +63,8 @@ jobs:
             echo "app-charts=$app_charts" >> $GITHUB_OUTPUT
           fi
 
-  # Job to release infrastructure charts
-  release-infra:
+  # Job to validate infrastructure charts
+  validate-infra:
     needs: detect-changes
     if: needs.detect-changes.outputs.infra-charts != ''
     runs-on: ubuntu-latest
@@ -87,16 +87,14 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Run chart-releaser for ${{ matrix.chart }}
-        uses: helm/chart-releaser-action@v1.7.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        with:
-          charts_dir: helm/infra
-          config: cr.yaml
+      - name: Validate ${{ matrix.chart }} chart
+        run: |
+          echo "Validating helm/infra/${{ matrix.chart }}"
+          helm lint helm/infra/${{ matrix.chart }}
+          helm template ${{ matrix.chart }} helm/infra/${{ matrix.chart }} --debug
 
-  # Job to release application charts
-  release-app:
+  # Job to validate application charts
+  validate-app:
     needs: detect-changes
     if: needs.detect-changes.outputs.app-charts != ''
     runs-on: ubuntu-latest
@@ -119,17 +117,15 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Run chart-releaser for ${{ matrix.chart }}
-        uses: helm/chart-releaser-action@v1.7.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        with:
-          charts_dir: helm/app
-          config: cr.yaml
+      - name: Validate ${{ matrix.chart }} chart
+        run: |
+          echo "Validating helm/app/${{ matrix.chart }}"
+          helm lint helm/app/${{ matrix.chart }}
+          helm template ${{ matrix.chart }} helm/app/${{ matrix.chart }} --debug
 
-  # Job to update index and create summary
-  update-index:
-    needs: [detect-changes, release-infra, release-app]
+  # Job to package charts and update index
+  package-and-release:
+    needs: [detect-changes, validate-infra, validate-app]
     if: always() && (needs.detect-changes.outputs.infra-charts != '' || needs.detect-changes.outputs.app-charts != '')
     runs-on: ubuntu-latest
     steps:
@@ -148,14 +144,47 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Update Helm repository index
+      - name: Package all charts
         run: |
-          # Create or update the index for all charts
+          echo "Packaging all charts..."
+          mkdir -p .cr-release-packages
+
+          # Package infrastructure charts
+          for chart in mongo redis weviate supabase nginx; do
+            if [ -d "helm/infra/$chart" ]; then
+              echo "Packaging helm/infra/$chart"
+              helm package helm/infra/$chart --destination .cr-release-packages
+            fi
+          done
+
+          # Package application charts
+          for chart in stackend stackweb celery repl; do
+            if [ -d "helm/app/$chart" ]; then
+              echo "Packaging helm/app/$chart"
+              helm package helm/app/$chart --destination .cr-release-packages
+            fi
+          done
+
+          echo "Packaging completed"
+          ls -la .cr-release-packages/
+
+      - name: Create Helm repository index
+        run: |
+          echo "Creating Helm repository index..."
           helm repo index .cr-release-packages --url https://stackai.github.io/stackai-helm/
 
-          # Commit and push the updated index
+          # Copy index to root
+          if [ -f ".cr-release-packages/index.yaml" ]; then
+            cp .cr-release-packages/index.yaml index.yaml
+            echo "Index file created: index.yaml"
+          else
+            echo "No index file created"
+          fi
+
+      - name: Commit and push index
+        run: |
           git add index.yaml
-          git commit -m "chore: update helm repository index" || exit 0
+          git commit -m "chore: update helm repository index" || echo "No changes to commit"
           git push origin gh-pages
 
       - name: Create release summary
