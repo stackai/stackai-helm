@@ -1,0 +1,47 @@
+{{- if .Values.temporal.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "temporal.server" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "temporal.labels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  type: {{ .Values.temporal.service.type }}
+  ports:
+    - port: {{ .Values.temporal.service.ports.frontend }}
+      targetPort: frontend
+      protocol: TCP
+      name: frontend
+    - port: {{ .Values.temporal.service.ports.web }}
+      targetPort: web
+      protocol: TCP
+      name: web
+  selector:
+    {{- include "temporal.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+{{- end }}
+
+{{- if .Values.temporalWeb.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "temporal.web" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "temporal.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  type: {{ .Values.temporalWeb.service.type }}
+  ports:
+    - port: {{ .Values.temporalWeb.service.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "temporal.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+{{- end }}

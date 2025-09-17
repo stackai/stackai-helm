@@ -1,0 +1,26 @@
+apiVersion: v2
+name: stackai-temporal
+description: Official StackAI Temporal Workflow Engine Helm chart.
+type: application
+version: 1.1.1
+appVersion: 1.1.1
+icon: https://stackai.com/favicon.ico
+keywords:
+  - stackai
+  - temporal
+  - workflow
+  - orchestration
+  - engine
+  - helm
+  - chart
+  - azure
+  - kubernetes
+  - aks
+  - acr
+  - keyvault
+home: https://stackai.com
+sources:
+  - https://github.com/stackai/stackai-helm
+maintainers:
+  - name: StackAI
+    email: support@stackai.com
