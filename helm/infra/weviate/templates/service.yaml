@@ -1,0 +1,23 @@
+{{- if .Values.weaviate.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "weaviate.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "weaviate.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.weaviate.service.type }}
+  ports:
+    - port: {{ .Values.weaviate.service.ports.weaviate }}
+      targetPort: weaviate
+      protocol: TCP
+      name: weaviate
+    - port: {{ .Values.weaviate.service.ports.grpc }}
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    {{- include "weaviate.selectorLabels" . | nindent 4 }}
+{{- end }}
