@@ -32,17 +32,17 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.weaviate.securityContext }}
+      {{- if .Values.weaviate.securityContext.enabled }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
+        {{- omit .Values.weaviate.securityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       containers:
         - name: weaviate
           image: "{{ .Values.weaviate.image.repository }}:{{ .Values.weaviate.image.tag }}"
           imagePullPolicy: {{ .Values.weaviate.image.pullPolicy }}
-          {{- with .Values.weaviate.podSecurityContext }}
+          {{- if .Values.weaviate.podSecurityContext.enabled }}
           securityContext:
-            {{- toYaml . | nindent 12 }}
+            {{- omit .Values.weaviate.podSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           envFrom:
             - configMapRef:
