@@ -58,7 +58,7 @@ Official StackAI Unstructured API Helm chart.
 | unstructured.image.tag | string | `"0.0.80"` |  |
 | unstructured.livenessProbe.enabled | bool | `true` |  |
 | unstructured.livenessProbe.failureThreshold | int | `3` |  |
-| unstructured.livenessProbe.httpGet.path | string | `"/general/v0/general"` |  |
+| unstructured.livenessProbe.httpGet.path | string | `"/healthcheck"` |  |
 | unstructured.livenessProbe.httpGet.port | string | `"http"` |  |
 | unstructured.livenessProbe.httpGet.scheme | string | `"HTTP"` |  |
 | unstructured.livenessProbe.initialDelaySeconds | int | `30` |  |
@@ -73,7 +73,7 @@ Official StackAI Unstructured API Helm chart.
 | unstructured.podSecurityContext.runAsUser | int | `1000` |  |
 | unstructured.readinessProbe.enabled | bool | `true` |  |
 | unstructured.readinessProbe.failureThreshold | int | `3` |  |
-| unstructured.readinessProbe.httpGet.path | string | `"/general/v0/general"` |  |
+| unstructured.readinessProbe.httpGet.path | string | `"/healthcheck"` |  |
 | unstructured.readinessProbe.httpGet.port | string | `"http"` |  |
 | unstructured.readinessProbe.httpGet.scheme | string | `"HTTP"` |  |
 | unstructured.readinessProbe.initialDelaySeconds | int | `10` |  |

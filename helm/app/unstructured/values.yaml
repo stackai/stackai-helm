@@ -88,7 +88,7 @@ unstructured:
   livenessProbe:
     enabled: true
     httpGet:
-      path: /general/v0/general
+      path: /healthcheck
       port: http
       scheme: HTTP
     initialDelaySeconds: 30
@@ -100,7 +100,7 @@ unstructured:
   readinessProbe:
     enabled: true
     httpGet:
-      path: /general/v0/general
+      path: /healthcheck
       port: http
       scheme: HTTP
     initialDelaySeconds: 10
