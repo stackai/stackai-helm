@@ -87,7 +87,7 @@ Use the provided scripts to access services locally:
 # ArgoCD UI (http://localhost:8080)
 ./scripts/port-forward-argocd.sh
 
-# Supabase Studio (http://localhost:3000) & API (http://localhost:8000)  
+# Supabase Studio (http://localhost:3000) & API (http://localhost:8000)
 ./scripts/port-forward-supabase.sh
 
 # Temporal Web UI (http://localhost:8088) & Frontend (localhost:7233)
@@ -207,7 +207,7 @@ All services are managed through ArgoCD applications for a GitOps workflow:
 
 - `mongodb`: MongoDB database
 - `redis`: Redis cache
-- `weaviate`: Weaviate vector database  
+- `weaviate`: Weaviate vector database
 - `supabase`: Complete Supabase stack
 - `temporal`: Temporal workflow engine
 - `unstructured`: Unstructured document processing API

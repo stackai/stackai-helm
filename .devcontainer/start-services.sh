@@ -107,6 +107,83 @@ weaviate:
     LOG_LEVEL=info
 EOF
 
+# Create PostgreSQL values for development
+print_status "Creating PostgreSQL development values..."
+cat <<EOF > dev-values/postgres-dev.yaml
+postgres:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "15.8"
+    pullPolicy: IfNotPresent
+
+  database:
+    name: temporal
+    username: temporal
+    password: "temporal-dev-password"
+    superuser: postgres
+    superuserPassword: "postgres-dev-password"
+
+  service:
+    type: ClusterIP
+    port: 5432
+
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+  securityContext:
+    enabled: true
+    runAsUser: 999
+    runAsGroup: 999
+    runAsNonRoot: true
+    fsGroup: 999
+
+  podSecurityContext:
+    enabled: true
+    runAsUser: 999
+    runAsGroup: 999
+    runAsNonRoot: true
+    fsGroup: 999
+
+  env:
+    POSTGRES_DB: temporal
+    POSTGRES_USER: temporal
+    POSTGRES_PASSWORD: temporal-dev-password
+    POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+serviceAccount:
+  create: true
+  automount: true
+EOF
+
 # Create Temporal values for development
 print_status "Creating Temporal development values..."
 cat <<EOF > dev-values/temporal-dev.yaml
@@ -128,7 +205,7 @@ temporal:
     DB_PORT: "5432"
     POSTGRES_USER: "temporal"
     POSTGRES_PWD: "temporal-dev-password"
-    POSTGRES_SEEDS: "supabase-db.stackai-infra.svc.cluster.local"
+    POSTGRES_SEEDS: "postgres.stackai-data.svc.cluster.local"
     DYNAMIC_CONFIG_FILE_PATH: "config/dynamicconfig/development-sql.yaml"
     ENABLE_ES: "false"
     secrets:
@@ -262,6 +339,9 @@ controller:
     proxy-connect-timeout: "60"
     proxy-send-timeout: "60"
     proxy-read-timeout: "60"
+    cors-allow-origin: "*"
+    cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,apikey"
 
 defaultBackend:
   enabled: true
@@ -272,6 +352,76 @@ defaultBackend:
     limits:
       memory: 64Mi
       cpu: 50m
+
+# Service Routing Configuration
+serviceRouting:
+  enabled: true
+  services:
+    argocd:
+      enabled: true
+      path: /argocd
+      service: argocd-server
+      port: 80
+    supabase:
+      enabled: true
+      studio:
+        path: /supabase/studio
+        service: supabase-studio
+        port: 3000
+      api:
+        path: /supabase/rest
+        service: supabase-kong
+        port: 8000
+      auth:
+        path: /supabase/auth
+        service: supabase-kong
+        port: 8000
+      realtime:
+        path: /supabase/realtime
+        service: supabase-kong
+        port: 8000
+      graphql:
+        path: /supabase/graphql
+        service: supabase-kong
+        port: 8000
+      storage:
+        path: /supabase/storage
+        service: supabase-kong
+        port: 8000
+      functions:
+        path: /supabase/functions
+        service: supabase-kong
+        port: 8000
+    temporal:
+      enabled: true
+      path: /temporal
+      service: temporal-web
+      port: 8088
+    unstructured:
+      enabled: true
+      path: /unstructured
+      service: unstructured
+      port: 8000
+    weaviate:
+      enabled: true
+      path: /weaviate
+      service: weaviate
+      port: 8080
+    mongodb:
+      enabled: true
+      path: /mongodb
+      service: mongodb
+      port: 27017
+    redis:
+      enabled: true
+      path: /redis
+      service: redis
+      port: 6379
+    postgres:
+      enabled: true
+      path: /postgres
+      service: postgres
+      port: 5432
 EOF
 
 # Deploy MongoDB
@@ -293,6 +443,21 @@ print_status "Deploying Weaviate..."
 helm upgrade --install weaviate ./helm/infra/weviate \
     --namespace stackai-data \
     --values dev-values/weaviate-dev.yaml \
+    --wait --timeout=300s
+
+# Deploy PostgreSQL
+print_status "Deploying PostgreSQL..."
+helm upgrade --install postgres ./helm/infra/postgres \
+    --namespace stackai-data \
+    --values dev-values/postgres-dev.yaml \
+    --wait --timeout=300s
+
+# Deploy NGINX Ingress Controller
+print_status "Deploying NGINX Ingress Controller..."
+helm upgrade --install nginx ./helm/infra/nginx \
+    --namespace nginx-ingress \
+    --create-namespace \
+    --values dev-values/nginx-dev.yaml \
     --wait --timeout=300s
 
 # Deploy Supabase
@@ -321,6 +486,8 @@ print_status "Waiting for services to be ready..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-mongodb -n stackai-data --timeout=300s
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-redis -n stackai-data --timeout=300s
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-weaviate -n stackai-data --timeout=300s
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgres -n stackai-data --timeout=300s
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=nginx-ingress-controller -n nginx-ingress --timeout=300s
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-supabase -n stackai-infra --timeout=300s
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-temporal -n stackai-processing --timeout=300s
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=stackai-unstructured -n stackai-processing --timeout=300s
@@ -399,6 +566,33 @@ spec:
     helm:
       valueFiles:
         - ../../../dev-values/weaviate-dev.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: stackai-data
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+EOF
+
+# PostgreSQL ArgoCD Application
+cat <<EOF > argocd-apps/postgres-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: .
+    path: helm/infra/postgres
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - ../../../dev-values/postgres-dev.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: stackai-data
@@ -491,6 +685,33 @@ spec:
       - CreateNamespace=true
 EOF
 
+# NGINX ArgoCD Application
+cat <<EOF > argocd-apps/nginx-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: .
+    path: helm/infra/nginx
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - ../../../dev-values/nginx-dev.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nginx-ingress
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+EOF
+
 # Apply ArgoCD applications
 print_status "Applying ArgoCD applications..."
 kubectl apply -f argocd-apps/
@@ -531,6 +752,32 @@ cat <<EOF > scripts/port-forward-redis.sh
 #!/bin/bash
 echo "Port forwarding Redis to localhost:6379"
 kubectl port-forward svc/redis -n stackai-data 6379:6379
+EOF
+
+cat <<EOF > scripts/port-forward-postgres.sh
+#!/bin/bash
+echo "Port forwarding PostgreSQL to localhost:5432"
+echo "Database: temporal"
+echo "Username: temporal"
+echo "Password: temporal-dev-password"
+kubectl port-forward svc/postgres -n stackai-data 5432:5432
+EOF
+
+cat <<EOF > scripts/port-forward-nginx.sh
+#!/bin/bash
+echo "🚀 Port forwarding NGINX to localhost:8080"
+echo ""
+echo "All services are now accessible through NGINX routing:"
+echo "- Services Overview: http://localhost:8080/"
+echo "- ArgoCD: http://localhost:8080/argocd"
+echo "- Supabase Studio: http://localhost:8080/supabase/studio"
+echo "- Supabase API: http://localhost:8080/supabase/rest"
+echo "- Temporal Web UI: http://localhost:8080/temporal"
+echo "- Unstructured API: http://localhost:8080/unstructured"
+echo "- Weaviate: http://localhost:8080/weaviate"
+echo ""
+echo "Starting port-forward..."
+kubectl port-forward svc/nginx-ingress-controller -n nginx-ingress 8080:80
 EOF
 
 cat <<EOF > scripts/port-forward-temporal.sh
@@ -583,32 +830,44 @@ StackAI Development Services
 
 Services Deployed:
 - MongoDB: stackai-data namespace
-- Redis: stackai-data namespace  
+- Redis: stackai-data namespace
 - Weaviate: stackai-data namespace
+- PostgreSQL: stackai-data namespace
+- NGINX Ingress: nginx-ingress namespace
 - Supabase: stackai-infra namespace
 - Temporal: stackai-processing namespace
 - Unstructured: stackai-processing namespace
 - ArgoCD: argocd namespace
 
-Access Information:
-- ArgoCD UI: http://localhost:8080 (admin/$(cat ~/.argocd-password 2>/dev/null || echo "check ~/.argocd-password"))
-- Supabase Studio: http://localhost:3000 (supabase/stackai-dev-studio-password)
-- Supabase API: http://localhost:8000
-- Weaviate: http://localhost:8081
-- Temporal Web UI: http://localhost:8088
-- Temporal Frontend: localhost:7233
-- Unstructured API: http://localhost:8082
+Access Information (via NGINX routing on localhost:8080):
+- Services Overview: http://localhost:8080/
+- ArgoCD UI: http://localhost:8080/argocd (admin/$(cat ~/.argocd-password 2>/dev/null || echo "check ~/.argocd-password"))
+- Supabase Studio: http://localhost:8080/supabase/studio (supabase/stackai-dev-studio-password)
+- Supabase API: http://localhost:8080/supabase/rest
+- Temporal Web UI: http://localhost:8080/temporal
+- Unstructured API: http://localhost:8080/unstructured
+- Weaviate: http://localhost:8080/weaviate
+- MongoDB: http://localhost:8080/mongodb (admin/stackai-dev-password)
+- Redis: http://localhost:8080/redis
+- PostgreSQL: http://localhost:8080/postgres (temporal/temporal-dev-password)
+
+Direct Access (individual port-forward):
 - MongoDB: localhost:27017 (admin/stackai-dev-password)
 - Redis: localhost:6379
+- PostgreSQL: localhost:5432 (temporal/temporal-dev-password)
+- Weaviate: localhost:8081
+- Temporal Frontend: localhost:7233
 
 Port Forward Scripts:
-- ./scripts/port-forward-argocd.sh
-- ./scripts/port-forward-supabase.sh
-- ./scripts/port-forward-weaviate.sh
-- ./scripts/port-forward-temporal.sh
-- ./scripts/port-forward-unstructured.sh
-- ./scripts/port-forward-mongodb.sh
-- ./scripts/port-forward-redis.sh
+- ./scripts/port-forward-nginx.sh (RECOMMENDED - All services via NGINX)
+- ./scripts/port-forward-argocd.sh (individual)
+- ./scripts/port-forward-supabase.sh (individual)
+- ./scripts/port-forward-weaviate.sh (individual)
+- ./scripts/port-forward-temporal.sh (individual)
+- ./scripts/port-forward-unstructured.sh (individual)
+- ./scripts/port-forward-mongodb.sh (individual)
+- ./scripts/port-forward-redis.sh (individual)
+- ./scripts/port-forward-postgres.sh (individual)
 
 Status Check:
 - ./scripts/check-services.sh
@@ -625,13 +884,26 @@ print_success "Service information saved to ~/.stackai-dev/services-info.txt"
 echo ""
 echo "🎉 StackAI Infrastructure Services are ready!"
 echo ""
-echo "Quick Access:"
-echo "- ArgoCD UI: Run './scripts/port-forward-argocd.sh' then visit http://localhost:8080"
+echo "🚀 RECOMMENDED: Single Access Point via NGINX"
+echo "- Run './scripts/port-forward-nginx.sh' then visit http://localhost:8080"
+echo "- All services accessible through NGINX routing with dedicated paths"
+echo ""
+echo "📋 Service Access via NGINX (localhost:8080):"
+echo "- Services Overview: http://localhost:8080/"
+echo "- ArgoCD UI: http://localhost:8080/argocd"
+echo "- Supabase Studio: http://localhost:8080/supabase/studio"
+echo "- Temporal Web UI: http://localhost:8080/temporal"
+echo "- Unstructured API: http://localhost:8080/unstructured"
+echo "- Weaviate: http://localhost:8080/weaviate"
+echo ""
+echo "🔧 Individual Service Access (if needed):"
+echo "- ArgoCD: Run './scripts/port-forward-argocd.sh' then visit http://localhost:8080"
 echo "- Supabase: Run './scripts/port-forward-supabase.sh' then visit http://localhost:3000"
 echo "- Temporal: Run './scripts/port-forward-temporal.sh' then visit http://localhost:8088"
 echo "- Unstructured: Run './scripts/port-forward-unstructured.sh' then visit http://localhost:8082"
+echo ""
+echo "📊 Management:"
 echo "- Service Status: Run './scripts/check-services.sh'"
 echo "- Interactive Dashboard: Run 'k9s'"
-echo ""
-echo "All services are managed by ArgoCD for GitOps workflow!"
+echo "- All services are managed by ArgoCD for GitOps workflow!"
 echo ""
