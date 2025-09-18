@@ -1,6 +1,6 @@
 # stackai-repl
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.0](https://img.shields.io/badge/AppVersion-1.1.0-informational?style=flat-square)
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.1](https://img.shields.io/badge/AppVersion-1.1.1-informational?style=flat-square)
 
 Official StackAI Repl API Helm chart.
 
@@ -85,7 +85,6 @@ Official StackAI Repl API Helm chart.
 | repl.resources.requests.cpu | string | `"100m"` |  |
 | repl.resources.requests.memory | string | `"256Mi"` |  |
 | repl.securityContext.enabled | bool | `true` |  |
-| repl.securityContext.fsGroup | int | `1000` |  |
 | repl.securityContext.runAsGroup | int | `1000` |  |
 | repl.securityContext.runAsNonRoot | bool | `true` |  |
 | repl.securityContext.runAsUser | int | `1000` |  |
@@ -96,4 +95,3 @@ Official StackAI Repl API Helm chart.
 | serviceAccount.automount | bool | `true` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |
-

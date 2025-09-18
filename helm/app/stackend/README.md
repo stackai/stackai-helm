@@ -1,6 +1,6 @@
 # stackai-stackend
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.0](https://img.shields.io/badge/AppVersion-1.1.0-informational?style=flat-square)
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.1](https://img.shields.io/badge/AppVersion-1.1.1-informational?style=flat-square)
 
 Official StackAI Stackend Backend Helm chart.
 
@@ -89,11 +89,9 @@ Official StackAI Stackend Backend Helm chart.
 | stackend.resources.requests.cpu | string | `"100m"` |  |
 | stackend.resources.requests.memory | string | `"256Mi"` |  |
 | stackend.securityContext.enabled | bool | `true` |  |
-| stackend.securityContext.fsGroup | int | `1000` |  |
 | stackend.securityContext.runAsGroup | int | `1000` |  |
 | stackend.securityContext.runAsNonRoot | bool | `true` |  |
 | stackend.securityContext.runAsUser | int | `1000` |  |
 | stackend.service.ports.http | int | `8000` |  |
 | stackend.service.type | string | `"ClusterIP"` |  |
 | stackend.tolerations | list | `[]` |  |
-

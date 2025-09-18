@@ -44,12 +44,12 @@ temporal:
   # Environment Configuration
   env:
     # Database settings
-    DB: "postgresql"
+    DB: "postgres12"
     DB_PORT: "5432"
     POSTGRES_USER: "temporal"
     POSTGRES_PWD: ""
     POSTGRES_SEEDS: ""
-    DYNAMIC_CONFIG_FILE_PATH: "config/dynamicconfig/development-sql.yaml"
+    SKIP_SCHEMA_SETUP: "true"
     ENABLE_ES: "false"
     ES_SEEDS: ""
     ES_VERSION: "v7"
@@ -119,7 +119,7 @@ temporal:
 temporalWeb:
   enabled: true
   image:
-    repository: "temporalio/web"
+    repository: "temporalio/ui"
     tag: "2.29.0"
     pullPolicy: IfNotPresent
 

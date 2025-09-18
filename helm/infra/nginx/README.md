@@ -1,6 +1,6 @@
 # stackai-nginx-ingress
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.10.0](https://img.shields.io/badge/AppVersion-1.10.0-informational?style=flat-square)
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.10.1](https://img.shields.io/badge/AppVersion-1.10.1-informational?style=flat-square)
 
 Official StackAI Nginx Ingress Controller Helm chart.
 
@@ -87,7 +87,7 @@ Official StackAI Nginx Ingress Controller Helm chart.
 | controller.tolerations | list | `[]` |  |
 | defaultBackend.enabled | bool | `true` |  |
 | defaultBackend.image.pullPolicy | string | `"IfNotPresent"` |  |
-| defaultBackend.image.repository | string | `"registry.k8s.io/ingress-nginx/defaultbackend-amd64"` |  |
+| defaultBackend.image.repository | string | `"registry.k8s.io/defaultbackend-amd64"` |  |
 | defaultBackend.image.tag | string | `"1.5"` |  |
 | defaultBackend.podSecurityContext.enabled | bool | `true` |  |
 | defaultBackend.podSecurityContext.fsGroup | int | `65534` |  |
@@ -113,4 +113,54 @@ Official StackAI Nginx Ingress Controller Helm chart.
 | serviceAccount.automount | bool | `true` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |
-
+| serviceRouting.enabled | bool | `true` |  |
+| serviceRouting.services.argocd.enabled | bool | `true` |  |
+| serviceRouting.services.argocd.path | string | `"/argocd"` |  |
+| serviceRouting.services.argocd.port | int | `80` |  |
+| serviceRouting.services.argocd.service | string | `"argocd-server"` |  |
+| serviceRouting.services.mongodb.enabled | bool | `true` |  |
+| serviceRouting.services.mongodb.path | string | `"/mongodb"` |  |
+| serviceRouting.services.mongodb.port | int | `27017` |  |
+| serviceRouting.services.mongodb.service | string | `"mongodb"` |  |
+| serviceRouting.services.postgres.enabled | bool | `true` |  |
+| serviceRouting.services.postgres.path | string | `"/postgres"` |  |
+| serviceRouting.services.postgres.port | int | `5432` |  |
+| serviceRouting.services.postgres.service | string | `"postgres"` |  |
+| serviceRouting.services.redis.enabled | bool | `true` |  |
+| serviceRouting.services.redis.path | string | `"/redis"` |  |
+| serviceRouting.services.redis.port | int | `6379` |  |
+| serviceRouting.services.redis.service | string | `"redis"` |  |
+| serviceRouting.services.supabase.api.path | string | `"/supabase/rest"` |  |
+| serviceRouting.services.supabase.api.port | int | `8000` |  |
+| serviceRouting.services.supabase.api.service | string | `"supabase-kong"` |  |
+| serviceRouting.services.supabase.auth.path | string | `"/supabase/auth"` |  |
+| serviceRouting.services.supabase.auth.port | int | `8000` |  |
+| serviceRouting.services.supabase.auth.service | string | `"supabase-kong"` |  |
+| serviceRouting.services.supabase.enabled | bool | `true` |  |
+| serviceRouting.services.supabase.functions.path | string | `"/supabase/functions"` |  |
+| serviceRouting.services.supabase.functions.port | int | `8000` |  |
+| serviceRouting.services.supabase.functions.service | string | `"supabase-kong"` |  |
+| serviceRouting.services.supabase.graphql.path | string | `"/supabase/graphql"` |  |
+| serviceRouting.services.supabase.graphql.port | int | `8000` |  |
+| serviceRouting.services.supabase.graphql.service | string | `"supabase-kong"` |  |
+| serviceRouting.services.supabase.realtime.path | string | `"/supabase/realtime"` |  |
+| serviceRouting.services.supabase.realtime.port | int | `8000` |  |
+| serviceRouting.services.supabase.realtime.service | string | `"supabase-kong"` |  |
+| serviceRouting.services.supabase.storage.path | string | `"/supabase/storage"` |  |
+| serviceRouting.services.supabase.storage.port | int | `8000` |  |
+| serviceRouting.services.supabase.storage.service | string | `"supabase-kong"` |  |
+| serviceRouting.services.supabase.studio.path | string | `"/supabase/studio"` |  |
+| serviceRouting.services.supabase.studio.port | int | `3000` |  |
+| serviceRouting.services.supabase.studio.service | string | `"supabase-studio"` |  |
+| serviceRouting.services.temporal.enabled | bool | `true` |  |
+| serviceRouting.services.temporal.path | string | `"/temporal"` |  |
+| serviceRouting.services.temporal.port | int | `8088` |  |
+| serviceRouting.services.temporal.service | string | `"temporal-web"` |  |
+| serviceRouting.services.unstructured.enabled | bool | `true` |  |
+| serviceRouting.services.unstructured.path | string | `"/unstructured"` |  |
+| serviceRouting.services.unstructured.port | int | `8000` |  |
+| serviceRouting.services.unstructured.service | string | `"unstructured"` |  |
+| serviceRouting.services.weaviate.enabled | bool | `true` |  |
+| serviceRouting.services.weaviate.path | string | `"/weaviate"` |  |
+| serviceRouting.services.weaviate.port | int | `8080` |  |
+| serviceRouting.services.weaviate.service | string | `"weaviate"` |  |

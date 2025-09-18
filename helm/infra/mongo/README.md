@@ -1,6 +1,6 @@
 # stackai-mongodb
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.0](https://img.shields.io/badge/AppVersion-1.1.0-informational?style=flat-square)
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.1](https://img.shields.io/badge/AppVersion-1.1.1-informational?style=flat-square)
 
 Official StackAI MongoDB Helm chart.
 
@@ -61,7 +61,6 @@ Official StackAI MongoDB Helm chart.
 | mongodb.resources.requests.cpu | string | `"100m"` |  |
 | mongodb.resources.requests.memory | string | `"256Mi"` |  |
 | mongodb.securityContext.enabled | bool | `true` |  |
-| mongodb.securityContext.fsGroup | int | `999` |  |
 | mongodb.securityContext.runAsGroup | int | `999` |  |
 | mongodb.securityContext.runAsUser | int | `999` |  |
 | mongodb.service.ports.mongodb | int | `27017` |  |
@@ -72,4 +71,3 @@ Official StackAI MongoDB Helm chart.
 | serviceAccount.automount | bool | `true` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |
-

@@ -1,6 +1,6 @@
 # stackai-unstructured
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.0](https://img.shields.io/badge/AppVersion-1.1.0-informational?style=flat-square)
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.1](https://img.shields.io/badge/AppVersion-1.1.1-informational?style=flat-square)
 
 Official StackAI Unstructured API Helm chart.
 
@@ -86,7 +86,6 @@ Official StackAI Unstructured API Helm chart.
 | unstructured.resources.requests.cpu | string | `"200m"` |  |
 | unstructured.resources.requests.memory | string | `"512Mi"` |  |
 | unstructured.securityContext.enabled | bool | `true` |  |
-| unstructured.securityContext.fsGroup | int | `1000` |  |
 | unstructured.securityContext.runAsGroup | int | `1000` |  |
 | unstructured.securityContext.runAsNonRoot | bool | `true` |  |
 | unstructured.securityContext.runAsUser | int | `1000` |  |

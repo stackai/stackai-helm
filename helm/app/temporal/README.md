@@ -1,6 +1,6 @@
 # stackai-temporal
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.0](https://img.shields.io/badge/AppVersion-1.1.0-informational?style=flat-square)
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.1](https://img.shields.io/badge/AppVersion-1.1.1-informational?style=flat-square)
 
 Official StackAI Temporal Workflow Engine Helm chart.
 
@@ -47,15 +47,15 @@ Official StackAI Temporal Workflow Engine Helm chart.
 | serviceAccount.name | string | `""` |  |
 | temporal.affinity | object | `{}` |  |
 | temporal.enabled | bool | `true` |  |
-| temporal.env.DB | string | `"postgresql"` |  |
+| temporal.env.DB | string | `"postgres12"` |  |
 | temporal.env.DB_PORT | string | `"5432"` |  |
-| temporal.env.DYNAMIC_CONFIG_FILE_PATH | string | `"config/dynamicconfig/development-sql.yaml"` |  |
 | temporal.env.ENABLE_ES | string | `"false"` |  |
 | temporal.env.ES_SEEDS | string | `""` |  |
 | temporal.env.ES_VERSION | string | `"v7"` |  |
 | temporal.env.POSTGRES_PWD | string | `""` |  |
 | temporal.env.POSTGRES_SEEDS | string | `""` |  |
 | temporal.env.POSTGRES_USER | string | `"temporal"` |  |
+| temporal.env.SKIP_SCHEMA_SETUP | string | `"true"` |  |
 | temporal.env.secrets.externalSecretName | string | `"temporal-secrets"` |  |
 | temporal.env.secrets.secretStoreClass | string | `"azure-keyvault"` |  |
 | temporal.env.secrets.secretStoreName | string | `"azure-keyvault-store"` |  |
@@ -106,7 +106,7 @@ Official StackAI Temporal Workflow Engine Helm chart.
 | temporalWeb.env.TEMPORAL_ADDRESS | string | `"temporal-server:7233"` |  |
 | temporalWeb.env.TEMPORAL_CORS_ORIGINS | string | `"http://localhost:3000"` |  |
 | temporalWeb.image.pullPolicy | string | `"IfNotPresent"` |  |
-| temporalWeb.image.repository | string | `"temporalio/web"` |  |
+| temporalWeb.image.repository | string | `"temporalio/ui"` |  |
 | temporalWeb.image.tag | string | `"2.29.0"` |  |
 | temporalWeb.livenessProbe.enabled | bool | `true` |  |
 | temporalWeb.livenessProbe.failureThreshold | int | `3` |  |
@@ -145,4 +145,3 @@ Official StackAI Temporal Workflow Engine Helm chart.
 | temporalWeb.service.ports.http | int | `8088` |  |
 | temporalWeb.service.type | string | `"ClusterIP"` |  |
 | temporalWeb.tolerations | list | `[]` |  |
-

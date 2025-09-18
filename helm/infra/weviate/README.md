@@ -1,6 +1,6 @@
 # stackai-weaviate
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.0](https://img.shields.io/badge/AppVersion-1.1.0-informational?style=flat-square)
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.1](https://img.shields.io/badge/AppVersion-1.1.1-informational?style=flat-square)
 
 Official StackAI Weaviate Helm chart.
 
@@ -28,7 +28,7 @@ Official StackAI Weaviate Helm chart.
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |
 | weaviate.affinity | object | `{}` |  |
-| weaviate.configuration | string | `"QUERY_DEFAULTS_LIMIT=25\nAUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true\nPERSISTENCE_DATA_PATH=/var/lib/weaviate\nDEFAULT_VECTORIZER_MODULE=none\nENABLE_MODULES=text2vec-cohere,text2vec-huggingface,text2vec-palm,text2vec-openai,generative-openai,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere,qna-openai\nCLUSTER_HOSTNAME=node1\n"` |  |
+| weaviate.configuration | string | `"QUERY_DEFAULTS_LIMIT=25\nAUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true\nPERSISTENCE_DATA_PATH=./data\nDEFAULT_VECTORIZER_MODULE=none\nENABLE_MODULES=text2vec-cohere,text2vec-huggingface,text2vec-palm,text2vec-openai,generative-openai,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere,qna-openai\nCLUSTER_HOSTNAME=node1\n"` |  |
 | weaviate.enabled | bool | `true` |  |
 | weaviate.image.pullPolicy | string | `"IfNotPresent"` |  |
 | weaviate.image.repository | string | `"semitechnologies/weaviate"` |  |
@@ -72,4 +72,3 @@ Official StackAI Weaviate Helm chart.
 | weaviate.service.ports.weaviate | int | `8080` |  |
 | weaviate.service.type | string | `"ClusterIP"` |  |
 | weaviate.tolerations | list | `[]` |  |
-
