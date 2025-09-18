@@ -12,3 +12,6 @@ __pycache__/
 *.pyd
 *.pyw
 *.pyz
+
+### Local Development ###
+dev-values/**
