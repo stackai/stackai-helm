@@ -1,0 +1,16 @@
+apiVersion: v2
+name: postgres
+description: A lightweight PostgreSQL database for Temporal
+type: application
+version: 0.1.0
+appVersion: "15.8"
+keywords:
+  - postgresql
+  - database
+  - temporal
+home: https://www.postgresql.org/
+sources:
+  - https://github.com/postgres/postgres
+maintainers:
+  - name: StackAI Team
+    email: team@stackai.dev
