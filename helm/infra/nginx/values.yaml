@@ -132,7 +132,7 @@ controller:
 defaultBackend:
   enabled: true
   image:
-    repository: registry.k8s.io/ingress-nginx/defaultbackend-amd64
+    repository: registry.k8s.io/defaultbackend-amd64
     tag: "1.5"
     pullPolicy: IfNotPresent
 
@@ -169,6 +169,77 @@ rbac:
 podDisruptionBudget:
   enabled: false
   minAvailable: 1
+
+# Service Routing Configuration
+serviceRouting:
+  enabled: true
+  # Enable routing for all services through NGINX
+  services:
+    argocd:
+      enabled: true
+      path: /argocd
+      service: argocd-server
+      port: 80
+    supabase:
+      enabled: true
+      studio:
+        path: /supabase/studio
+        service: supabase-studio
+        port: 3000
+      api:
+        path: /supabase/rest
+        service: supabase-kong
+        port: 8000
+      auth:
+        path: /supabase/auth
+        service: supabase-kong
+        port: 8000
+      realtime:
+        path: /supabase/realtime
+        service: supabase-kong
+        port: 8000
+      graphql:
+        path: /supabase/graphql
+        service: supabase-kong
+        port: 8000
+      storage:
+        path: /supabase/storage
+        service: supabase-kong
+        port: 8000
+      functions:
+        path: /supabase/functions
+        service: supabase-kong
+        port: 8000
+    temporal:
+      enabled: true
+      path: /temporal
+      service: temporal-web
+      port: 8088
+    unstructured:
+      enabled: true
+      path: /unstructured
+      service: unstructured
+      port: 8000
+    weaviate:
+      enabled: true
+      path: /weaviate
+      service: weaviate
+      port: 8080
+    mongodb:
+      enabled: true
+      path: /mongodb
+      service: mongodb
+      port: 27017
+    redis:
+      enabled: true
+      path: /redis
+      service: redis
+      port: 6379
+    postgres:
+      enabled: true
+      path: /postgres
+      service: postgres
+      port: 5432
 
 # Extra objects to be created
 extraObjects: []

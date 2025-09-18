@@ -34,6 +34,17 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
+          {{- if .Values.serviceRouting.enabled }}
+          volumeMounts:
+            - name: services-overview
+              mountPath: /var/www/html
+          {{- end }}
           resources:
             {{- toYaml .Values.defaultBackend.resources | nindent 12 }}
+      {{- if .Values.serviceRouting.enabled }}
+      volumes:
+        - name: services-overview
+          configMap:
+            name: {{ include "nginx.fullname" . }}-services-overview
+      {{- end }}
 {{- end }}

@@ -1,0 +1,202 @@
+{{- if .Values.serviceRouting.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx.fullname" . }}-services-overview
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: services-overview
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>StackAI Development Services</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 40px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 2.5em;
+                margin-bottom: 10px;
+                font-weight: 300;
+            }
+
+            .header p {
+                font-size: 1.2em;
+                opacity: 0.9;
+            }
+
+            .services-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+                padding: 40px;
+            }
+
+            .service-card {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 25px;
+                border-left: 5px solid #667eea;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .service-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            }
+
+            .service-card h3 {
+                color: #333;
+                margin-bottom: 15px;
+                font-size: 1.4em;
+            }
+
+            .service-card p {
+                color: #666;
+                margin-bottom: 15px;
+                line-height: 1.6;
+            }
+
+            .service-link {
+                display: inline-block;
+                background: #667eea;
+                color: white;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background 0.3s ease;
+                font-weight: 500;
+            }
+
+            .service-link:hover {
+                background: #5a6fd8;
+                color: white;
+                text-decoration: none;
+            }
+
+            .status {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 0.8em;
+                font-weight: 500;
+                margin-left: 10px;
+            }
+
+            .status.running {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .footer {
+                background: #f8f9fa;
+                padding: 20px;
+                text-align: center;
+                color: #666;
+                border-top: 1px solid #e9ecef;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🚀 StackAI Development Services</h1>
+                <p>All your services accessible through a single endpoint</p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>ArgoCD <span class="status running">RUNNING</span></h3>
+                    <p>GitOps continuous delivery tool for Kubernetes applications</p>
+                    <a href="/argocd" class="service-link">Access ArgoCD</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>Supabase Studio <span class="status running">RUNNING</span></h3>
+                    <p>Database management and API dashboard</p>
+                    <a href="/supabase/studio" class="service-link">Access Studio</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>Supabase API <span class="status running">RUNNING</span></h3>
+                    <p>REST API, Auth, Realtime, and GraphQL endpoints</p>
+                    <a href="/supabase/rest" class="service-link">Access API</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>Temporal Web UI <span class="status running">RUNNING</span></h3>
+                    <p>Workflow management and monitoring dashboard</p>
+                    <a href="/temporal" class="service-link">Access Temporal</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>Unstructured API <span class="status running">RUNNING</span></h3>
+                    <p>Document processing and extraction API</p>
+                    <a href="/unstructured" class="service-link">Access API</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>Weaviate <span class="status running">RUNNING</span></h3>
+                    <p>Vector database for AI applications</p>
+                    <a href="/weaviate" class="service-link">Access Weaviate</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>MongoDB <span class="status running">RUNNING</span></h3>
+                    <p>Document database for application data</p>
+                    <a href="/mongodb" class="service-link">Access MongoDB</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>Redis <span class="status running">RUNNING</span></h3>
+                    <p>In-memory data structure store</p>
+                    <a href="/redis" class="service-link">Access Redis</a>
+                </div>
+
+                <div class="service-card">
+                    <h3>PostgreSQL <span class="status running">RUNNING</span></h3>
+                    <p>Relational database for Temporal workflows</p>
+                    <a href="/postgres" class="service-link">Access PostgreSQL</a>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>StackAI Development Environment - All services running on localhost:8080</p>
+                <p>Use the individual service links above to access each service</p>
+            </div>
+        </div>
+    </body>
+    </html>
+{{- end }}

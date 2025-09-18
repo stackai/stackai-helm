@@ -74,3 +74,21 @@ Default Backend name
 {{- define "nginx-ingress.defaultBackend" -}}
   {{- printf "%s-default-backend" (include "nginx-ingress.fullname" .) -}}
 {{- end -}}
+
+{{/*
+Ingress Class name
+*/}}
+{{- define "nginx.ingressClass" -}}
+{{- default "nginx" .Values.controller.ingressClass -}}
+{{- end -}}
+
+{{/*
+Alias templates for backward compatibility
+*/}}
+{{- define "nginx.fullname" -}}
+{{- include "nginx-ingress.fullname" . -}}
+{{- end -}}
+
+{{- define "nginx.labels" -}}
+{{- include "nginx-ingress.labels" . -}}
+{{- end -}}
