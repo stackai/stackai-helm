@@ -1,0 +1,39 @@
+unstructured:
+  enabled: true
+  image:
+    repository: downloads.unstructured.io/unstructured-io/unstructured-api
+    tag: "0.0.80"
+  replicaCount: 1
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 200m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+  env:
+    DEBUG: "true"
+    ENVIRONMENT: "development"
+    LOG_LEVEL: "INFO"
+    UNSTRUCTURED_PARALLEL_MODE_ENABLED: "false"
+    UNSTRUCTURED_PARALLEL_MODE_THREADS: "3"
+    UNSTRUCTURED_PARALLEL_MODE_SPLIT_SIZE: "1"
+    UNSTRUCTURED_PARALLEL_MODE_RETRY_ATTEMPTS: "2"
+    UNSTRUCTURED_API_KEY: ""
+    DATABASE_URL: ""
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: localhost
+      paths:
+        - path: /unstructured
+          pathType: Prefix
+  tls: []
+
+externalSecrets:
+  enabled: false

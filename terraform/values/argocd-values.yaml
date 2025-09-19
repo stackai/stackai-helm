@@ -1,0 +1,73 @@
+global:
+  domain: localhost
+
+server:
+  service:
+    type: ClusterIP  # Change from LoadBalancer to ClusterIP
+    ports:
+      server: 80
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    hosts:
+      - argocd.localhost
+    paths:
+      - /
+  insecure: true
+  config:
+    url: http://argocd.localhost
+
+configs:
+  params:
+    server.insecure: true
+    application.instanceLabelKey: argocd.argoproj.io/instance
+    admin.enabled: "true"
+    resource.exclusions: |
+      - apiGroups:
+          - cilium.io
+        kinds:
+          - CiliumIdentity
+        clusters:
+          - "*"
+    resource.inclusions: ""
+    oidc.config: |
+      name: OIDC
+      issuer: $ARGOCD_SERVER_OIDC_ISSUER
+      clientId: $ARGOCD_SERVER_OIDC_CLIENT_ID
+      clientSecret: $ARGOCD_SERVER_OIDC_CLIENT_SECRET
+      requestedScopes: ["openid", "profile", "email", "groups"]
+      requestedIDTokenClaims: {"groups": {"essential": true}}
+    policy.default: role:readonly
+    policy.csv: |
+      p, role:admin, applications, *, */*, allow
+      p, role:admin, clusters, *, *, allow
+      p, role:admin, repositories, *, *, allow
+      g, argocd-admins, role:admin
+
+controller:
+  env:
+    - name: ARGOCD_CONTROLLER_REPLICAS
+      value: "1"
+  metrics:
+    enabled: true
+    service:
+      type: ClusterIP
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: true
+
+applicationSet:
+  enabled: true
+
+repoServer:
+  metrics:
+    enabled: true
+  service:
+    type: ClusterIP
