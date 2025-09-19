@@ -1,0 +1,37 @@
+{{- if and .Values.defaultBackend.enabled .Values.serviceRouting.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx.fullname" . }}-default-backend-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx-ingress.labels" . | nindent 4 }}
+    app.kubernetes.io/component: default-backend
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            root /usr/share/nginx/html;
+            index index.html;
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Disable server tokens
+        server_tokens off;
+
+        # Add security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header X-Content-Type-Options "nosniff" always;
+    }
+{{- end }}

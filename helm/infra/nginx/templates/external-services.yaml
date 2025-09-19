@@ -1,0 +1,118 @@
+{{- if .Values.serviceRouting.enabled }}
+# ExternalName services for cross-namespace routing
+
+{{- if .Values.serviceRouting.services.argocd.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: external-service
+spec:
+  type: ExternalName
+  externalName: argocd-server.argocd.svc.cluster.local
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.serviceRouting.services.temporal.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: temporal-web
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: external-service
+spec:
+  type: ExternalName
+  externalName: temporal-stackai-temporal-web.stackai-processing.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.serviceRouting.services.weaviate.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weaviate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: external-service
+spec:
+  type: ExternalName
+  externalName: weaviate-stackai-weaviate.stackai-data.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.serviceRouting.services.mongodb.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: external-service
+spec:
+  type: ExternalName
+  externalName: mongodb-stackai-mongodb.stackai-data.svc.cluster.local
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.serviceRouting.services.redis.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: external-service
+spec:
+  type: ExternalName
+  externalName: redis-stackai-redis.stackai-data.svc.cluster.local
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.serviceRouting.services.postgres.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: external-service
+spec:
+  type: ExternalName
+  externalName: postgres.stackai-data.svc.cluster.local
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+{{- end }}
+
+{{- end }}

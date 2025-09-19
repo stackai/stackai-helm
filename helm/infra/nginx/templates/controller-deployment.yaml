@@ -23,6 +23,10 @@ spec:
         prometheus.io/port: "10254"
         prometheus.io/scheme: "http"
     spec:
+      {{- if .Values.controller.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: {{ .Values.controller.dnsPolicy | default "ClusterFirstWithHostNet" }}
+      {{- end }}
       {{- with .Values.serviceAccount.create }}
       serviceAccountName: {{ include "nginx-ingress.serviceAccountName" $ }}
       {{- end }}
@@ -57,9 +61,14 @@ spec:
             - --configmap=$(POD_NAMESPACE)/{{ include "nginx-ingress.controller" . }}-config
             - --tcp-services-configmap=$(POD_NAMESPACE)/{{ include "nginx-ingress.controller" . }}-tcp
             - --udp-services-configmap=$(POD_NAMESPACE)/{{ include "nginx-ingress.controller" . }}-udp
+            {{- if .Values.defaultBackend.enabled }}
+            - --default-backend-service=$(POD_NAMESPACE)/{{ include "nginx-ingress.defaultBackend" . }}
+            {{- end }}
+            {{- if .Values.controller.admissionWebhooks.enabled }}
             - --validating-webhook=:8443
             - --validating-webhook-certificate=/usr/local/certificates/cert
             - --validating-webhook-key=/usr/local/certificates/key
+            {{- end }}
           env:
             - name: POD_NAME
               valueFrom:
@@ -78,9 +87,11 @@ spec:
             - name: https
               containerPort: 443
               protocol: TCP
+            {{- if .Values.controller.admissionWebhooks.enabled }}
             - name: webhook
               containerPort: 8443
               protocol: TCP
+            {{- end }}
             - name: metrics
               containerPort: 10254
               protocol: TCP
@@ -97,13 +108,17 @@ spec:
           {{- end }}
           {{- end }}
           volumeMounts:
+            {{- if .Values.controller.admissionWebhooks.enabled }}
             - name: webhook-cert
               mountPath: /usr/local/certificates/
               readOnly: true
+            {{- end }}
           resources:
             {{- toYaml .Values.controller.resources | nindent 12 }}
       volumes:
+        {{- if .Values.controller.admissionWebhooks.enabled }}
         - name: webhook-cert
           secret:
             secretName: {{ include "nginx-ingress.controller" . }}-admission
+        {{- end }}
 {{- end }}

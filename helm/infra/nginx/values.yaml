@@ -25,15 +25,18 @@ controller:
   # Replica Configuration
   replicaCount: 1
 
-  # Service Configuration
+  # Service Configuration for Docker Desktop
   service:
     type: LoadBalancer
     ports:
       http: 80
       https: 443
-    annotations:
-      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-      service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "subnet-name"
+    # Remove Azure-specific annotations for Docker Desktop
+    annotations: {}
+
+  # Enable host network for Docker Desktop
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
 
   # Ingress Class Configuration
   ingressClassResource:
@@ -44,6 +47,10 @@ controller:
 
   # Ingress Class Name
   ingressClass: nginx
+
+  # Admission Webhooks Configuration
+  admissionWebhooks:
+    enabled: false
 
   # Controller Configuration
   config:
@@ -94,11 +101,15 @@ controller:
     runAsNonRoot: true
     fsGroup: 65534
 
-  # Node Selector
-  nodeSelector: {}
+  # Force NGINX to run on control-plane node for Docker Desktop
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
 
-  # Tolerations
-  tolerations: []
+  # Tolerations for control-plane node
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
 
   # Affinity
   affinity: {}
@@ -132,8 +143,8 @@ controller:
 defaultBackend:
   enabled: true
   image:
-    repository: registry.k8s.io/defaultbackend-amd64
-    tag: "1.5"
+    repository: nginx
+    tag: "1.25-alpine"
     pullPolicy: IfNotPresent
 
   # Resources
@@ -145,101 +156,89 @@ defaultBackend:
       memory: 64Mi
       cpu: 50m
 
-  # Security Context
-  securityContext:
-    enabled: true
-    runAsUser: 65534
-    runAsGroup: 65534
-    runAsNonRoot: true
-    fsGroup: 65534
-
-  # Pod Security Context
-  podSecurityContext:
-    enabled: true
-    runAsUser: 65534
-    runAsGroup: 65534
-    runAsNonRoot: true
-    fsGroup: 65534
-
 # RBAC Configuration
 rbac:
   create: true
 
-# Pod Disruption Budget
-podDisruptionBudget:
-  enabled: false
-  minAvailable: 1
-
-# Service Routing Configuration
+# Service Routing Configuration - Enable for localhost access with services overview
 serviceRouting:
   enabled: true
-  # Enable routing for all services through NGINX
   services:
+    # ArgoCD
     argocd:
       enabled: true
-      path: /argocd
-      service: argocd-server
+      service: "argocd-server"
       port: 80
+      path: "/argocd"
+
+    # Supabase services
     supabase:
       enabled: true
-      studio:
-        path: /supabase/studio
-        service: supabase-studio
-        port: 3000
       api:
-        path: /supabase/rest
-        service: supabase-kong
+        service: "supabase-kong"
         port: 8000
+        path: "/supabase/rest"
       auth:
-        path: /supabase/auth
-        service: supabase-kong
+        service: "supabase-kong"
         port: 8000
+        path: "/supabase/auth"
       realtime:
-        path: /supabase/realtime
-        service: supabase-kong
+        service: "supabase-kong"
         port: 8000
-      graphql:
-        path: /supabase/graphql
-        service: supabase-kong
-        port: 8000
+        path: "/supabase/realtime"
       storage:
-        path: /supabase/storage
-        service: supabase-kong
+        service: "supabase-kong"
         port: 8000
+        path: "/supabase/storage"
       functions:
-        path: /supabase/functions
-        service: supabase-kong
+        service: "supabase-kong"
         port: 8000
+        path: "/supabase/functions"
+      graphql:
+        service: "supabase-kong"
+        port: 8000
+        path: "/supabase/graphql"
+      studio:
+        service: "supabase-studio"
+        port: 3000
+        path: "/supabase/studio"
+
+    # Temporal
     temporal:
       enabled: true
-      path: /temporal
-      service: temporal-web
+      service: "temporal-web"
       port: 8088
+      path: "/temporal"
+
+    # Unstructured API
     unstructured:
       enabled: true
-      path: /unstructured
-      service: unstructured
+      service: "unstructured"
       port: 8000
+      path: "/unstructured"
+
+    # Weaviate
     weaviate:
       enabled: true
-      path: /weaviate
-      service: weaviate
+      service: "weaviate"
       port: 8080
+      path: "/weaviate"
+
+    # Data stores (for development access)
     mongodb:
       enabled: true
-      path: /mongodb
-      service: mongodb
+      service: "mongodb"
       port: 27017
+      path: "/mongodb"
+
     redis:
       enabled: true
-      path: /redis
-      service: redis
+      service: "redis"
       port: 6379
+      path: "/redis"
+
     postgres:
       enabled: true
-      path: /postgres
-      service: postgres
+      service: "postgres"
       port: 5432
-
-# Extra objects to be created
-extraObjects: []
+      path: "/postgres"

@@ -1,0 +1,82 @@
+{{- if .Values.serviceRouting.enabled }}
+---
+# Services overview at localhost root
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "nginx.fullname" . }}-services-overview
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: services-overview
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: {{ include "nginx.ingressClass" . }}
+  rules:
+    - host: localhost
+      http:
+        paths:
+          # Services overview at root
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "nginx.fullname" . }}-default-backend
+                port:
+                  number: 8080
+
+# Supabase routing is handled by Kong ingress directly
+
+---
+# Temporal subdomain routing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "nginx.fullname" . }}-temporal
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: temporal-routing
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: {{ include "nginx.ingressClass" . }}
+  rules:
+    - host: temporal.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: temporal-web
+                port:
+                  number: 8080
+
+---
+# Weaviate subdomain routing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "nginx.fullname" . }}-weaviate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: weaviate-routing
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: {{ include "nginx.ingressClass" . }}
+  rules:
+    - host: weaviate.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: weaviate
+                port:
+                  number: 8080
+{{- end }}
