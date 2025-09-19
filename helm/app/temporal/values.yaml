@@ -115,6 +115,7 @@ temporal:
     failureThreshold: 3
     successThreshold: 1
 
+
 # Temporal Web UI Configuration
 temporalWeb:
   enabled: true
@@ -148,19 +149,11 @@ temporalWeb:
 
   # Security Context
   securityContext:
-    enabled: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    runAsNonRoot: true
-    fsGroup: 1000
+    enabled: false
 
   # Pod Security Context
   podSecurityContext:
-    enabled: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    runAsNonRoot: true
-    fsGroup: 1000
+    enabled: false
 
   # Node Selector
   nodeSelector: {}

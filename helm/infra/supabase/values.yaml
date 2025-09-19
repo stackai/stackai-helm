@@ -78,6 +78,12 @@ studio:
   password: "this_password_is_insecure_and_should_be_updated"
   # if using existing secret, the key must be "password"
   existingSecret: ""
+  ingress:
+    enabled: false
+    className: "nginx"
+    host: "localhost"
+    path: "/supabase/studio"
+    annotations: {}
 
 kong:
   image:
