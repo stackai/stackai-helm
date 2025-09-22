@@ -72,3 +72,28 @@ output "helm_releases" {
     temporal       = helm_release.temporal.name
   }
 }
+
+output "stackend_url" {
+  description = "Stackend URL"
+  value       = "http://stackend.localhost"
+}
+
+output "stackweb_url" {
+  description = "Stackweb URL"
+  value       = "http://stackweb.localhost"
+}
+
+output "celery_url" {
+  description = "Celery URL"
+  value       = "http://celery.localhost"
+}
+
+output "repl_url" {
+  description = "Repl URL"
+  value       = "http://repl-api.localhost"
+}
+
+output "unstructured_url" {
+  description = "Unstructured URL"
+  value       = "http://unstructured.localhost"
+}

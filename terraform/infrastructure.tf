@@ -119,7 +119,7 @@ resource "helm_release" "stackend" {
   namespace = kubernetes_namespace.stackai_processing.metadata[0].name
 
   values = [
-    file("${path.module}/values/stackend-dev.yaml")
+    file("${path.module}/values/stakend-values.yaml")
   ]
 
   depends_on = [
@@ -135,7 +135,7 @@ resource "helm_release" "stackweb" {
   namespace = kubernetes_namespace.stackai_processing.metadata[0].name
 
   values = [
-    file("${path.module}/values/stackweb-dev.yaml")
+    file("${path.module}/values/stakweb-values.yaml")
   ]
 
   depends_on = [
@@ -151,7 +151,7 @@ resource "helm_release" "celery" {
   namespace = kubernetes_namespace.stackai_processing.metadata[0].name
 
   values = [
-    file("${path.module}/values/celery-dev.yaml")
+    file("${path.module}/values/celery-values.yaml")
   ]
 
   depends_on = [
@@ -167,7 +167,7 @@ resource "helm_release" "repl" {
   namespace = kubernetes_namespace.stackai_processing.metadata[0].name
 
   values = [
-    file("${path.module}/values/repl-dev.yaml")
+    file("${path.module}/values/repl-values.yaml")
   ]
 
   depends_on = [

@@ -16,4 +16,4 @@ resource_limits = {
 }
 
 # ArgoCD admin password (leave empty to use generated)
-# argocd_admin_password = ""
+# argocd_admin_password = "stackai-dev-argocd-password"
