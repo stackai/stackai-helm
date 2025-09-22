@@ -1,26 +1,18 @@
-name: Release StackAI Helm Charts
+name: Release Charts
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-  pull-requests: write
+  push:
+    branches:
+      - main
 
 jobs:
-  # Job to validate all infrastructure charts
-  validate-infra:
+  release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chart: [mongo, redis, weaviate, supabase, nginx, postgres]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -29,242 +21,14 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Set up Helm
+      - name: Install Helm
         uses: azure/setup-helm@v4
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.7.0
         with:
-          version: v3.12.0
-
-      - name: Validate ${{ matrix.chart }} chart
-        run: |
-          echo "Validating helm/infra/${{ matrix.chart }}"
-          helm lint helm/infra/${{ matrix.chart }}
-          helm template ${{ matrix.chart }} helm/infra/${{ matrix.chart }}
-
-  # Job to validate all application charts
-  validate-app:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chart: [stackend, stackweb, celery, repl, temporal, unstructured]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: v3.12.0
-
-      - name: Validate ${{ matrix.chart }} chart
-        run: |
-          echo "Validating helm/app/${{ matrix.chart }}"
-          helm lint helm/app/${{ matrix.chart }}
-          helm template ${{ matrix.chart }} helm/app/${{ matrix.chart }}
-
-  # Job to package charts and update index
-  package-and-release:
-    needs: [validate-infra, validate-app]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: v3.12.0
-
-      - name: Package all charts
-        run: |
-          echo "Packaging all charts..."
-          mkdir -p .cr-release-packages
-
-          # Package infrastructure charts
-          for chart in mongo redis weaviate supabase nginx postgres; do
-            if [ -d "helm/infra/$chart" ]; then
-              echo "Packaging helm/infra/$chart"
-              helm package helm/infra/$chart --destination .cr-release-packages
-            fi
-          done
-
-          # Package application charts
-          for chart in stackend stackweb celery repl temporal unstructured; do
-            if [ -d "helm/app/$chart" ]; then
-              echo "Packaging helm/app/$chart"
-              helm package helm/app/$chart --destination .cr-release-packages
-            fi
-          done
-
-          echo "Packaging completed"
-          ls -la .cr-release-packages/
-
-      - name: Create Helm repository index
-        run: |
-          echo "Creating Helm repository index..."
-          helm repo index .cr-release-packages --url https://stackai.github.io/stackai-helm/
-
-          # Copy index to root
-          if [ -f ".cr-release-packages/index.yaml" ]; then
-            cp .cr-release-packages/index.yaml index.yaml
-            echo "Index file created: index.yaml"
-          else
-            echo "No index file created"
-          fi
-
-      - name: Get version from release
-        id: get-version
-        run: |
-          # Get version from the release tag or use timestamp
-          if [ "${{ github.event_name }}" = "release" ]; then
-            VERSION="${{ github.event.release.tag_name }}"
-          else
-            VERSION="v$(date +%Y%m%d-%H%M%S)"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Using version: $VERSION"
-
-      - name: Create build branch
-        run: |
-          # Create a new branch for this build
-          BRANCH_NAME="build-${{ steps.get-version.outputs.version }}"
-          echo "Creating branch: $BRANCH_NAME"
-
-          # Create and checkout the build branch
-          git checkout -b "$BRANCH_NAME"
-
-          # Create Jekyll configuration files
-          cat > .gitignore << EOF
-          # Exclude Helm repository files from Jekyll processing
-          index.yaml
-          .cr-release-packages/
-          *.tgz
-          EOF
-
-          # Create _config.yml to configure Jekyll
-          cat > _config.yml << EOF
-          # Jekyll configuration for Helm repository
-          exclude:
-            - .cr-release-packages/
-            - index.yaml
-            - "*.tgz"
-
-          # Disable Jekyll processing for these files
-          include:
-            - .nojekyll
-          EOF
-
-          # Create .nojekyll file to disable Jekyll processing
-          touch .nojekyll
-
-          # Create a simple README for the Helm repository
-          cat > README.md << EOF
-          # StackAI Helm Charts Repository
-
-          This repository contains Helm charts for StackAI components.
-
-          ## Installation
-
-          \`\`\`bash
-          helm repo add stackai https://stackai.github.io/stackai-helm/
-          helm repo update
-          \`\`\`
-
-          ## Available Charts
-
-          - stackai-stackend
-          - stackai-stackweb
-          - stackai-celery
-          - stackai-repl
-          - stackai-mongodb
-          - stackai-redis
-          - stackai-weaviate
-          - stackai-supabase
-          - stackai-nginx-ingress
-          - stackai-postgres
-          - stackai-temporal
-          - stackai-unstructured
-          \`\`\`
-          EOF
-
-      - name: Commit and push build branch
-        run: |
-          BRANCH_NAME="build-${{ steps.get-version.outputs.version }}"
-
-          # Add all files (force add the Helm files since we want them in the repository)
-          git add -f index.yaml .cr-release-packages/
-          git add .gitignore _config.yml .nojekyll README.md
-
-          # Commit changes
-          git commit -m "chore: build helm repository for ${{ steps.get-version.outputs.version }}"
-
-          # Push the build branch
-          git push origin "$BRANCH_NAME"
-
-          echo "Build branch pushed: $BRANCH_NAME"
-
-      - name: Deploy to gh-pages
-        run: |
-          BRANCH_NAME="build-${{ steps.get-version.outputs.version }}"
-
-          # Check if gh-pages branch exists
-          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
-            echo "gh-pages branch exists, checking out"
-            git checkout gh-pages
-            git pull origin gh-pages
-          else
-            echo "gh-pages branch does not exist, creating it"
-            git checkout --orphan gh-pages
-            git rm -rf .
-          fi
-
-          # Copy files from build branch to gh-pages
-          git checkout "$BRANCH_NAME" -- index.yaml .cr-release-packages/ .gitignore _config.yml .nojekyll README.md
-
-          # Commit and push to gh-pages
-          git add .
-          git commit -m "Deploy Helm Repository ${{ steps.get-version.outputs.version }}"
-          git push origin gh-pages
-
-          echo "Successfully deployed to gh-pages branch"
-
-      - name: Create release summary
-        run: |
-          echo "## 🚀 StackAI Helm Charts Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Infrastructure Charts Released:" >> $GITHUB_STEP_SUMMARY
-          echo "- mongo" >> $GITHUB_STEP_SUMMARY
-          echo "- redis" >> $GITHUB_STEP_SUMMARY
-          echo "- weaviate" >> $GITHUB_STEP_SUMMARY
-          echo "- supabase" >> $GITHUB_STEP_SUMMARY
-          echo "- nginx" >> $GITHUB_STEP_SUMMARY
-          echo "- postgres" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Application Charts Released:" >> $GITHUB_STEP_SUMMARY
-          echo "- stackend" >> $GITHUB_STEP_SUMMARY
-          echo "- stackweb" >> $GITHUB_STEP_SUMMARY
-          echo "- celery" >> $GITHUB_STEP_SUMMARY
-          echo "- repl" >> $GITHUB_STEP_SUMMARY
-          echo "- temporal" >> $GITHUB_STEP_SUMMARY
-          echo "- unstructured" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Installation:" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo 'helm repo add stackai https://stackai.github.io/stackai-helm/' >> $GITHUB_STEP_SUMMARY
-          echo 'helm repo update' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          config: cr.yaml
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
