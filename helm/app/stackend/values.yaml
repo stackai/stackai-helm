@@ -18,7 +18,7 @@ serviceAccount:
 stackend:
   enabled: true
   image:
-    repository: "your-acr.azurecr.io/stackai/stackend"
+    repository: "stackai.azurecr.io/stackai/stackend-backend"
     tag: "latest"
     pullPolicy: IfNotPresent
 

@@ -100,6 +100,8 @@ kubectl create namespace stackai-gateway --dry-run=client -o yaml | kubectl appl
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
 
+kubectl create namespace stackai-app
+
 # Label namespaces
 kubectl label namespace stackai-infra name=stackai-infra --overwrite
 kubectl label namespace stackai-data name=stackai-data --overwrite
