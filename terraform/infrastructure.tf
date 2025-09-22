@@ -53,7 +53,7 @@ resource "helm_release" "postgres" {
 # Deploy Weaviate
 resource "helm_release" "weaviate" {
   name      = "weaviate"
-  chart     = "${path.module}/../helm/infra/weviate"
+  chart     = "${path.module}/../helm/infra/weaviate"
   namespace = kubernetes_namespace.stackai_data.metadata[0].name
 
   values = [
@@ -93,5 +93,85 @@ resource "helm_release" "temporal" {
     kubernetes_namespace.stackai_processing,
     helm_release.nginx_ingress,
     helm_release.postgres
+  ]
+}
+
+# Deploy Unstructured
+resource "helm_release" "unstructured" {
+  name      = "unstructured"
+  chart     = "${path.module}/../helm/app/unstructured"
+  namespace = kubernetes_namespace.stackai_processing.metadata[0].name
+
+  values = [
+    file("${path.module}/values/unstructured-dev.yaml")
+  ]
+
+  depends_on = [
+    kubernetes_namespace.stackai_processing,
+    helm_release.nginx_ingress
+  ]
+}
+
+# Deploy Stackend
+resource "helm_release" "stackend" {
+  name      = "stackend"
+  chart     = "${path.module}/../helm/app/stackend"
+  namespace = kubernetes_namespace.stackai_processing.metadata[0].name
+
+  values = [
+    file("${path.module}/values/stackend-dev.yaml")
+  ]
+
+  depends_on = [
+    kubernetes_namespace.stackai_processing,
+    helm_release.nginx_ingress
+  ]
+}
+
+# Deploy Stackweb
+resource "helm_release" "stackweb" {
+  name      = "stackweb"
+  chart     = "${path.module}/../helm/app/stackweb"
+  namespace = kubernetes_namespace.stackai_processing.metadata[0].name
+
+  values = [
+    file("${path.module}/values/stackweb-dev.yaml")
+  ]
+
+  depends_on = [
+    kubernetes_namespace.stackai_processing,
+    helm_release.nginx_ingress
+  ]
+}
+
+# Deploy Celery
+resource "helm_release" "celery" {
+  name      = "celery"
+  chart     = "${path.module}/../helm/app/celery"
+  namespace = kubernetes_namespace.stackai_processing.metadata[0].name
+
+  values = [
+    file("${path.module}/values/celery-dev.yaml")
+  ]
+
+  depends_on = [
+    kubernetes_namespace.stackai_processing,
+    helm_release.nginx_ingress
+  ]
+}
+
+# Deploy Repl
+resource "helm_release" "repl" {
+  name      = "repl"
+  chart     = "${path.module}/../helm/app/repl"
+  namespace = kubernetes_namespace.stackai_processing.metadata[0].name
+
+  values = [
+    file("${path.module}/values/repl-dev.yaml")
+  ]
+
+  depends_on = [
+    kubernetes_namespace.stackai_processing,
+    helm_release.nginx_ingress
   ]
 }
