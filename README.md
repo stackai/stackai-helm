@@ -17,7 +17,7 @@ helm repo update
 
 ```bash
 # MongoDB database
-helm install mongodb stackai/stackai-mongo
+helm install mongodb stackai/stackai-mongodb
 
 # Redis cache
 helm install redis stackai/stackai-redis
@@ -30,6 +30,9 @@ helm install supabase stackai/stackai-supabase
 
 # Nginx Ingress Controller
 helm install nginx stackai/stackai-nginx-ingress
+
+# PostgreSQL database
+helm install postgres stackai/postgres
 ```
 
 ### Install Applications
@@ -46,6 +49,12 @@ helm install celery stackai/stackai-celery
 
 # Repl API
 helm install repl stackai/stackai-repl
+
+# Temporal Workflow Engine
+helm install temporal stackai/stackai-temporal
+
+# Unstructured API
+helm install unstructured stackai/stackai-unstructured
 ```
 
 ## 📦 Available Charts
@@ -54,20 +63,23 @@ helm install repl stackai/stackai-repl
 
 | Chart | Description | Version |
 |-------|-------------|---------|
-| [stackai-mongo](helm/infra/mongo) | MongoDB database for StackAI | ![MongoDB](https://img.shields.io/badge/version-1.0.0-blue) |
-| [stackai-redis](helm/infra/redis) | Redis in-memory data store | ![Redis](https://img.shields.io/badge/version-1.0.0-blue) |
-| [stackai-weaviate](helm/infra/weviate) | Weaviate vector database | ![Weaviate](https://img.shields.io/badge/version-1.0.0-blue) |
-| [stackai-supabase](helm/infra/supabase) | Supabase backend-as-a-service | ![Supabase](https://img.shields.io/badge/version-1.0.0-blue) |
-| [stackai-nginx-ingress](helm/infra/nginx) | Nginx Ingress Controller | ![Nginx](https://img.shields.io/badge/version-1.0.0-blue) |
+| [stackai-mongodb](helm/infra/mongo) | MongoDB database for StackAI | ![MongoDB](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-redis](helm/infra/redis) | Redis in-memory data store | ![Redis](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-weaviate](helm/infra/weaviate) | Weaviate vector database | ![Weaviate](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-supabase](helm/infra/supabase) | Supabase backend-as-a-service | ![Supabase](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-nginx-ingress](helm/infra/nginx) | Nginx Ingress Controller | ![Nginx](https://img.shields.io/badge/version-1.1.1-blue) |
+| [postgres](helm/infra/postgres) | PostgreSQL database for Temporal | ![PostgreSQL](https://img.shields.io/badge/version-0.1.0-blue) |
 
 ### Application Charts
 
 | Chart | Description | Version |
 |-------|-------------|---------|
-| [stackai-stackend](helm/app/stackend) | StackAI backend API service | ![Stackend](https://img.shields.io/badge/version-1.0.0-blue) |
-| [stackai-stackweb](helm/app/stackweb) | StackAI frontend web application | ![Stackweb](https://img.shields.io/badge/version-1.0.0-blue) |
-| [stackai-celery](helm/app/celery) | Background task processing | ![Celery](https://img.shields.io/badge/version-1.0.0-blue) |
-| [stackai-repl](helm/app/repl) | StackAI Repl API service | ![Repl](https://img.shields.io/badge/version-1.0.0-blue) |
+| [stackai-stackend](helm/app/stackend) | StackAI backend API service | ![Stackend](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-stackweb](helm/app/stackweb) | StackAI frontend web application | ![Stackweb](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-celery](helm/app/celery) | Background task processing | ![Celery](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-repl](helm/app/repl) | StackAI Repl API service | ![Repl](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-temporal](helm/app/temporal) | Temporal workflow engine | ![Temporal](https://img.shields.io/badge/version-1.1.1-blue) |
+| [stackai-unstructured](helm/app/unstructured) | Unstructured API service | ![Unstructured](https://img.shields.io/badge/version-1.1.1-blue) |
 
 ## 🛠️ Configuration
 
@@ -77,7 +89,7 @@ Each chart supports extensive customization through values files:
 
 ```bash
 # Install with custom values
-helm install mongodb stackai/stackai-mongo -f my-values.yaml
+helm install mongodb stackai/stackai-mongodb -f my-values.yaml
 
 # Override specific values
 helm install redis stackai/stackai-redis \

@@ -2,8 +2,8 @@ apiVersion: v2
 name: stackai-redis
 description: Official StackAI Redis Helm chart.
 type: application
-version: 1.1.1
-appVersion: 7.3.1
+version: 1.1.2
+appVersion: 7.3.2
 icon: https://stackai.com/favicon.ico
 keywords:
   - stackai

@@ -2,8 +2,8 @@ apiVersion: v2
 name: stackai-weaviate
 description: Official StackAI Weaviate Helm chart.
 type: application
-version: 1.1.1
-appVersion: 1.1.1
+version: 1.1.2
+appVersion: 1.26.2
 icon: https://stackai.com/favicon.ico
 keywords:
   - stackai
