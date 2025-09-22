@@ -57,3 +57,37 @@ resource "kubernetes_namespace" "stackai_processing" {
     name = "stackai-processing"
   }
 }
+
+# Create Azure Container Registry secret for image pulling
+resource "kubernetes_secret" "acr_secret" {
+  for_each = toset([
+    kubernetes_namespace.stackai_infra.metadata[0].name,
+    kubernetes_namespace.stackai_data.metadata[0].name,
+    kubernetes_namespace.stackai_processing.metadata[0].name
+  ])
+
+  metadata {
+    name      = "acr-secret"
+    namespace = each.value
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "stackai.azurecr.io" = {
+          username = var.acr_username
+          password = var.acr_password
+          auth     = base64encode("${var.acr_username}:${var.acr_password}")
+        }
+      }
+    })
+  }
+
+  depends_on = [
+    kubernetes_namespace.stackai_infra,
+    kubernetes_namespace.stackai_data,
+    kubernetes_namespace.stackai_processing
+  ]
+}

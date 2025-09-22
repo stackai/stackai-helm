@@ -6,6 +6,10 @@ stackend:
     tag: "v1.0.0"
     pullPolicy: IfNotPresent
 
+  # Image pull secrets for private registry
+  imagePullSecrets:
+    - name: acr-secret
+
   # Replica Configuration
   replicaCount: 1
 
@@ -75,6 +79,10 @@ stackend:
     POSTGRES_DB_PORT: "5432"
     POSTGRES_DB_USER: "supabase"
 
+    # External secrets configuration - DISABLED for development
+    secrets:
+      useExternalSecrets: false
+
   # Security Context
   securityContext:
     enabled: true
@@ -142,23 +150,9 @@ ingress:
       hosts:
         - stackend.localhost
 
-# External Secrets Configuration
+# External Secrets Configuration - DISABLED for development
 externalSecrets:
   enabled: false
-  # External secret store configuration
-  secretStore:
-    name: "azure-keyvault-store"
-    class: "azure-keyvault"
-    # Azure Key Vault configuration
-    vaultUrl: "https://your-keyvault.vault.azure.net/"
-    tenantId: "your-tenant-id"
-    # Service principal for authentication
-    servicePrincipal:
-      clientId: "your-client-id"
-      # Use external secret for client secret
-      clientSecretRef:
-        name: "azure-keyvault-credentials"
-        key: "client-secret"
 
 # Extra objects to be created
 extraObjects: []

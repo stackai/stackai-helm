@@ -5,6 +5,10 @@ stack-repl:
     tag: "v1.0.0"
     pullPolicy: IfNotPresent
 
+  # Image pull secrets for private registry
+  imagePullSecrets:
+    - name: acr-secret
+
   # Replica Configuration
   replicaCount: 1
 
@@ -90,23 +94,9 @@ ingress:
       hosts:
         - repl-api.localhost
 
-# External Secrets Configuration
+# External Secrets Configuration - DISABLED for development
 externalSecrets:
   enabled: false
-  # External secret store configuration
-  secretStore:
-    name: "azure-keyvault-store"
-    class: "azure-keyvault"
-    # Azure Key Vault configuration
-    vaultUrl: "https://your-keyvault.vault.azure.net/"
-    tenantId: "your-tenant-id"
-    # Service principal for authentication
-    servicePrincipal:
-      clientId: "your-client-id"
-      # Use external secret for client secret
-      clientSecretRef:
-        name: "azure-keyvault-credentials"
-        key: "client-secret"
 
 # Extra objects to be created
 extraObjects: []

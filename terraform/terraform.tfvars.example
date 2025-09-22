@@ -16,4 +16,9 @@ resource_limits = {
 }
 
 # ArgoCD admin password (leave empty to use generated)
-# argocd_admin_password = "stackai-dev-argocd-password"
+argocd_admin_password = "stackai-dev-argocd-password"
+
+# Azure Container Registry credentials
+# Get these from: az acr credential show --name stackai --query "username" -o tsv
+# acr_username = "your-acr-username"
+# acr_password = "your-acr-password"

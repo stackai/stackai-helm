@@ -34,3 +34,17 @@ variable "resource_limits" {
     memory_limit = "512Mi"
   }
 }
+
+variable "acr_username" {
+  description = "Azure Container Registry username"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "acr_password" {
+  description = "Azure Container Registry password"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

@@ -18,6 +18,7 @@ This Terraform configuration sets up a complete local development environment fo
    - Wait for the cluster to be ready
 
 2. **Clone and setup**
+
    ```bash
    cd infra
    terraform init
@@ -26,15 +27,16 @@ This Terraform configuration sets up a complete local development environment fo
    ```
 
 3. **Access services**
-   - Services Overview: http://localhost
-   - ArgoCD: http://argocd.localhost
-   - Supabase: http://supabase.localhost
-   - Temporal Web: http://temporal.localhost
-   - Weaviate: http://weaviate.localhost
+   - Services Overview: <http://localhost>
+   - ArgoCD: <http://argocd.localhost>
+   - Supabase: <http://supabase.localhost>
+   - Temporal Web: <http://temporal.localhost>
+   - Weaviate: <http://weaviate.localhost>
 
 ## Architecture
 
 ### Namespaces
+
 - `argocd` - ArgoCD for GitOps
 - `stackai-infra` - Infrastructure components (nginx, supabase)
 - `stackai-data` - Data stores (mongodb, redis, postgres, weaviate)
@@ -43,22 +45,26 @@ This Terraform configuration sets up a complete local development environment fo
 ### Components
 
 #### Infrastructure
+
 - **Nginx Ingress Controller** - Load balancer and ingress
 - **ArgoCD** - GitOps continuous delivery
 - **Supabase** - Backend-as-a-Service (auth, db, api)
 
 #### Data Stores
+
 - **MongoDB** - Document database
 - **Redis** - In-memory cache
 - **PostgreSQL** - Relational database for Temporal
 - **Weaviate** - Vector database
 
 #### Processing
+
 - **Temporal** - Workflow orchestration engine
 
 ## Configuration
 
 ### Environment Variables
+
 All services use development values from `../dev-values/` directory:
 
 - `mongodb-dev.yaml` - MongoDB configuration
@@ -72,6 +78,7 @@ All services use development values from `../dev-values/` directory:
 ### Customization
 
 Edit `variables.tf` to customize:
+
 - Domain name (default: localhost)
 - Resource limits
 - SSL/TLS settings
@@ -79,6 +86,7 @@ Edit `variables.tf` to customize:
 ## Accessing Services
 
 ### ArgoCD
+
 ```bash
 # Get admin password
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
@@ -88,16 +96,20 @@ open http://argocd.localhost
 ```
 
 ### Supabase
-- **Full Platform**: http://supabase.localhost
+
+- **Full Platform**: <http://supabase.localhost>
 - **Admin**: supabase / stackai-dev-studio-password
 
 ### Temporal
-- **Web UI**: http://temporal.localhost
+
+- **Web UI**: <http://temporal.localhost>
 
 ### Weaviate
-- **API & Console**: http://weaviate.localhost
+
+- **API & Console**: <http://weaviate.localhost>
 
 ### Data Stores
+
 ```bash
 # MongoDB
 mongosh "mongodb://admin:stackai-dev-password@localhost:27017/admin"
@@ -142,16 +154,19 @@ kubectl port-forward svc/weaviate -n stackai-data 8080:8080
 ## Troubleshooting
 
 ### Check Pod Status
+
 ```bash
 kubectl get pods -A
 ```
 
 ### Check Service Status
+
 ```bash
 kubectl get svc -A
 ```
 
 ### View Logs
+
 ```bash
 # ArgoCD
 kubectl logs -l app.kubernetes.io/name=argocd-server -n argocd
@@ -164,6 +179,7 @@ kubectl logs -l app.kubernetes.io/component=server -n stackai-processing
 ```
 
 ### Restart Services
+
 ```bash
 # Restart all deployments in a namespace
 kubectl rollout restart deployment -n stackai-infra
@@ -182,6 +198,7 @@ terraform destroy
 1. **Make changes** to Helm charts in `../helm/`
 2. **Update values** in `../dev-values/`
 3. **Apply changes** via ArgoCD UI or:
+
    ```bash
    kubectl patch application stackai-infrastructure -n argocd --type merge -p '{"operation":{"sync":{"syncStrategy":{"force":true}}}}'
    ```
@@ -189,12 +206,14 @@ terraform destroy
 ## Monitoring
 
 ### Resource Usage
+
 ```bash
 kubectl top nodes
 kubectl top pods -A
 ```
 
 ### Events
+
 ```bash
 kubectl get events -A --sort-by='.lastTimestamp'
 ```

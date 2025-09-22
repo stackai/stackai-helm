@@ -1,9 +1,13 @@
-celery:
+worker:
   enabled: true
   image:
     repository: "stackai.azurecr.io/stackai/stackend-celery-worker"
     tag: "v1.0.0"
     pullPolicy: IfNotPresent
+
+  # Image pull secrets for private registry
+  imagePullSecrets:
+    - name: acr-secret
 
   # Replica Configuration
   replicaCount: 1
@@ -73,6 +77,10 @@ celery:
     POSTGRES_DB_PASSWORD: "stackai-dev-postgres-password"
     POSTGRES_DB_PORT: "5432"
     POSTGRES_DB_USER: "supabase"
+
+    # External secrets configuration - DISABLED for development
+    secrets:
+      useExternalSecrets: false
   # Security Context
   securityContext:
     enabled: true
@@ -99,25 +107,31 @@ celery:
 
   # Liveness and Readiness Probes
   livenessProbe:
-    enabled: false
-    httpGet:
-      path: /health
-      port: http
-      scheme: HTTP
+    enabled: true
+    exec:
+      command:
+        - celery
+        - -A
+        - tasks
+        - inspect
+        - ping
     initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 10
     failureThreshold: 3
     successThreshold: 1
 
   readinessProbe:
-    enabled: false
-    httpGet:
-      path: /health
-      port: http
-      scheme: HTTP
+    enabled: true
+    exec:
+      command:
+        - celery
+        - -A
+        - tasks
+        - inspect
+        - ping
     initialDelaySeconds: 5
-    periodSeconds: 5
+    periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
     successThreshold: 1
@@ -140,23 +154,9 @@ ingress:
       hosts:
         - celery.localhost
 
-# External Secrets Configuration
+# External Secrets Configuration - DISABLED for development
 externalSecrets:
   enabled: false
-  # External secret store configuration
-  secretStore:
-    name: "azure-keyvault-store"
-    class: "azure-keyvault"
-    # Azure Key Vault configuration
-    vaultUrl: "https://your-keyvault.vault.azure.net/"
-    tenantId: "your-tenant-id"
-    # Service principal for authentication
-    servicePrincipal:
-      clientId: "your-client-id"
-      # Use external secret for client secret
-      clientSecretRef:
-        name: "azure-keyvault-credentials"
-        key: "client-secret"
 
 # Extra objects to be created
 extraObjects: []
