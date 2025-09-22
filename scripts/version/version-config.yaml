@@ -6,44 +6,44 @@ chartVersion: "1.0.0"
 appVersion: "1.0.0"
 # Chart versions by category
 infrastructure:
-  chartVersion: "1.1.2"
-  appVersion: "1.1.2"
+  chartVersion: "1.1.3"
+  appVersion: "1.1.3"
   components:
     mongodb:
-      chartVersion: "1.1.2"
-      appVersion: "7.1.2"
+      chartVersion: "1.1.3"
+      appVersion: "7.1.3"
     redis:
-      chartVersion: "1.1.2"
-      appVersion: "7.3.2"
+      chartVersion: "1.1.3"
+      appVersion: "7.3.3"
     weaviate:
-      chartVersion: "1.1.2"
-      appVersion: "1.26.2"
+      chartVersion: "1.1.3"
+      appVersion: "1.26.3"
     supabase:
-      chartVersion: "1.1.2"
-      appVersion: "1.1.2"
+      chartVersion: "1.1.3"
+      appVersion: "1.1.3"
     nginx:
-      chartVersion: "1.1.2"
-      appVersion: "1.10.2"
+      chartVersion: "1.1.3"
+      appVersion: "1.10.3"
 application:
-  chartVersion: "1.1.2"
-  appVersion: "1.1.2"
+  chartVersion: "1.1.3"
+  appVersion: "1.1.3"
   components:
     stackend:
-      chartVersion: "1.1.2"
-      appVersion: "1.1.2"
+      chartVersion: "1.1.3"
+      appVersion: "1.1.3"
     stackweb:
-      chartVersion: "1.1.2"
-      appVersion: "1.1.2"
+      chartVersion: "1.1.3"
+      appVersion: "1.1.3"
     celery:
-      chartVersion: "1.1.2"
-      appVersion: "1.1.2"
+      chartVersion: "1.1.3"
+      appVersion: "1.1.3"
     repl:
-      chartVersion: "1.1.2"
-      appVersion: "1.1.2"
+      chartVersion: "1.1.3"
+      appVersion: "1.1.3"
 # Release information
 release:
   name: "stackai-v1.0.1"
-  date: "2025-09-22"
+  date: "2025-09-23"
   description: "Initial release of StackAI Helm charts with complete infrastructure and application components"
 # Version bump strategy
 versioning:
