@@ -62,13 +62,6 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Celery broker name
-*/}}
-{{- define "celery.broker" -}}
-  {{- printf "%s-broker" (include "celery.fullname" .) -}}
-{{- end -}}
-
-{{/*
 Celery worker name
 */}}
 {{- define "celery.worker" -}}

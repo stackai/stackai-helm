@@ -1,0 +1,21 @@
+{{- if .Values.worker.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "celery.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "celery.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  type: {{ .Values.worker.service.type }}
+  ports:
+    - port: {{ .Values.worker.service.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "celery.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+{{- end }}

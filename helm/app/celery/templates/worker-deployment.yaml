@@ -62,11 +62,6 @@ spec:
             {{- end }}
             {{- if .Values.worker.env.secrets.useExternalSecrets }}
             # Environment variables from external secrets
-            - name: CELERY_BROKER_URL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "celery.externalSecret" . }}
-                  key: broker-url
             - name: CELERY_RESULT_BACKEND
               valueFrom:
                 secretKeyRef:
@@ -78,6 +73,10 @@ spec:
                   name: {{ include "celery.externalSecret" . }}
                   key: database-url
             {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.worker.service.ports.http }}
+              protocol: TCP
           {{- with .Values.worker.livenessProbe }}
           {{- if .enabled }}
           livenessProbe:

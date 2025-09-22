@@ -1,8 +1,8 @@
 # stackai-celery
 
-![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.1](https://img.shields.io/badge/AppVersion-1.1.1-informational?style=flat-square)
+![Version: 1.1.2](https://img.shields.io/badge/Version-1.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.2](https://img.shields.io/badge/AppVersion-1.1.2-informational?style=flat-square)
 
-Official StackAI Celery Worker and Broker Helm chart.
+Official StackAI Celery Worker Helm chart configured for external Redis.
 
 **Homepage:** <https://stackai.com>
 
@@ -20,30 +20,6 @@ Official StackAI Celery Worker and Broker Helm chart.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| broker.affinity | object | `{}` |  |
-| broker.enabled | bool | `true` |  |
-| broker.image.pullPolicy | string | `"IfNotPresent"` |  |
-| broker.image.repository | string | `"redis"` |  |
-| broker.image.tag | string | `"7.2-alpine"` |  |
-| broker.nodeSelector | object | `{}` |  |
-| broker.podSecurityContext.enabled | bool | `true` |  |
-| broker.podSecurityContext.fsGroup | int | `999` |  |
-| broker.podSecurityContext.runAsGroup | int | `999` |  |
-| broker.podSecurityContext.runAsNonRoot | bool | `true` |  |
-| broker.podSecurityContext.runAsUser | int | `999` |  |
-| broker.replicaCount | int | `1` |  |
-| broker.resources.limits.cpu | string | `"200m"` |  |
-| broker.resources.limits.memory | string | `"256Mi"` |  |
-| broker.resources.requests.cpu | string | `"100m"` |  |
-| broker.resources.requests.memory | string | `"128Mi"` |  |
-| broker.securityContext.enabled | bool | `true` |  |
-| broker.securityContext.fsGroup | int | `999` |  |
-| broker.securityContext.runAsGroup | int | `999` |  |
-| broker.securityContext.runAsNonRoot | bool | `true` |  |
-| broker.securityContext.runAsUser | int | `999` |  |
-| broker.service.ports.redis | int | `6379` |  |
-| broker.service.type | string | `"ClusterIP"` |  |
-| broker.tolerations | list | `[]` |  |
 | externalSecrets.enabled | bool | `true` |  |
 | externalSecrets.secretStore.class | string | `"azure-keyvault"` |  |
 | externalSecrets.secretStore.name | string | `"azure-keyvault-store"` |  |
@@ -61,8 +37,8 @@ Official StackAI Celery Worker and Broker Helm chart.
 | serviceAccount.name | string | `""` |  |
 | worker.affinity | object | `{}` |  |
 | worker.enabled | bool | `true` |  |
-| worker.env.CELERY_BROKER_URL | string | `"redis://celery-broker:6379/0"` |  |
-| worker.env.CELERY_RESULT_BACKEND | string | `"redis://celery-broker:6379/0"` |  |
+| worker.env.CELERY_BROKER_URL | string | `"redis://external-redis:6379/0"` | External Redis URL |
+| worker.env.CELERY_RESULT_BACKEND | string | `"redis://external-redis:6379/0"` | External Redis result backend URL |
 | worker.env.secrets.externalSecretName | string | `"celery-secrets"` |  |
 | worker.env.secrets.secretStoreClass | string | `"azure-keyvault"` |  |
 | worker.env.secrets.secretStoreName | string | `"azure-keyvault-store"` |  |
@@ -99,6 +75,8 @@ Official StackAI Celery Worker and Broker Helm chart.
 | worker.readinessProbe.successThreshold | int | `1` |  |
 | worker.readinessProbe.timeoutSeconds | int | `5` |  |
 | worker.replicaCount | int | `2` |  |
+| worker.service.ports.http | int | `8000` |  |
+| worker.service.type | string | `"ClusterIP"` |  |
 | worker.resources.limits.cpu | string | `"500m"` |  |
 | worker.resources.limits.memory | string | `"512Mi"` |  |
 | worker.resources.requests.cpu | string | `"200m"` |  |
@@ -109,3 +87,13 @@ Official StackAI Celery Worker and Broker Helm chart.
 | worker.securityContext.runAsNonRoot | bool | `true` |  |
 | worker.securityContext.runAsUser | int | `1000` |  |
 | worker.tolerations | list | `[]` |  |
+| ingress.annotations."cert-manager.io/cluster-issuer" | string | `"letsencrypt-prod"` |  |
+| ingress.annotations."nginx.ingress.kubernetes.io/rewrite-target" | string | `"/"` |  |
+| ingress.annotations."nginx.ingress.kubernetes.io/ssl-redirect" | string | `"false"` |  |
+| ingress.className | string | `"nginx"` |  |
+| ingress.enabled | bool | `true` |  |
+| ingress.hosts[0].host | string | `"celery.yourdomain.com"` |  |
+| ingress.hosts[0].paths[0].path | string | `"/"` |  |
+| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
+| ingress.tls[0].hosts[0] | string | `"celery.yourdomain.com"` |  |
+| ingress.tls[0].secretName | string | `"celery-tls"` |  |
