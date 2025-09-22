@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart: [mongo, redis, weviate, supabase, nginx, postgres]
+        chart: [mongo, redis, weaviate, supabase, nginx, postgres]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -96,7 +96,7 @@ jobs:
           mkdir -p .cr-release-packages
 
           # Package infrastructure charts
-          for chart in mongo redis weviate supabase nginx postgres; do
+          for chart in mongo redis weaviate supabase nginx postgres; do
             if [ -d "helm/infra/$chart" ]; then
               echo "Packaging helm/infra/$chart"
               helm package helm/infra/$chart --destination .cr-release-packages
@@ -250,7 +250,7 @@ jobs:
           echo "### Infrastructure Charts Released:" >> $GITHUB_STEP_SUMMARY
           echo "- mongo" >> $GITHUB_STEP_SUMMARY
           echo "- redis" >> $GITHUB_STEP_SUMMARY
-          echo "- weviate" >> $GITHUB_STEP_SUMMARY
+          echo "- weaviate" >> $GITHUB_STEP_SUMMARY
           echo "- supabase" >> $GITHUB_STEP_SUMMARY
           echo "- nginx" >> $GITHUB_STEP_SUMMARY
           echo "- postgres" >> $GITHUB_STEP_SUMMARY
