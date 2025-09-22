@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart: [mongo, redis, weviate, supabase, nginx]
+        chart: [mongo, redis, weviate, supabase, nginx, postgres]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart: [stackend, stackweb, celery, repl]
+        chart: [stackend, stackweb, celery, repl, temporal, unstructured]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -96,7 +96,7 @@ jobs:
           mkdir -p .cr-release-packages
 
           # Package infrastructure charts
-          for chart in mongo redis weviate supabase nginx; do
+          for chart in mongo redis weviate supabase nginx postgres; do
             if [ -d "helm/infra/$chart" ]; then
               echo "Packaging helm/infra/$chart"
               helm package helm/infra/$chart --destination .cr-release-packages
@@ -104,7 +104,7 @@ jobs:
           done
 
           # Package application charts
-          for chart in stackend stackweb celery repl; do
+          for chart in stackend stackweb celery repl temporal unstructured; do
             if [ -d "helm/app/$chart" ]; then
               echo "Packaging helm/app/$chart"
               helm package helm/app/$chart --destination .cr-release-packages
@@ -196,6 +196,9 @@ jobs:
           - stackai-weaviate
           - stackai-supabase
           - stackai-nginx-ingress
+          - stackai-postgres
+          - stackai-temporal
+          - stackai-unstructured
           \`\`\`
           EOF
 
@@ -250,12 +253,15 @@ jobs:
           echo "- weviate" >> $GITHUB_STEP_SUMMARY
           echo "- supabase" >> $GITHUB_STEP_SUMMARY
           echo "- nginx" >> $GITHUB_STEP_SUMMARY
+          echo "- postgres" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Application Charts Released:" >> $GITHUB_STEP_SUMMARY
           echo "- stackend" >> $GITHUB_STEP_SUMMARY
           echo "- stackweb" >> $GITHUB_STEP_SUMMARY
           echo "- celery" >> $GITHUB_STEP_SUMMARY
           echo "- repl" >> $GITHUB_STEP_SUMMARY
+          echo "- temporal" >> $GITHUB_STEP_SUMMARY
+          echo "- unstructured" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Installation:" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY

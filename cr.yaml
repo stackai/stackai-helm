@@ -6,7 +6,7 @@ git-repo: stackai-helm
 package-path: .cr-release-packages
 index-path: index.yaml
 pages-branch: gh-pages
-charts-repo: https://stackai.github.io/stackai-helm/
+charts-repo: https://stackai.github.io/stackai-helm
 
 # Chart directories to scan for charts
 # Each subdirectory in these paths will be treated as a separate chart
