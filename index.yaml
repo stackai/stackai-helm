@@ -31,6 +31,33 @@ entries:
     version: 1.1.3
   stackai-mongodb:
   - apiVersion: v2
+    appVersion: 1.1.4
+    created: "2025-09-23T01:56:09.401405694Z"
+    description: Official StackAI MongoDB Helm chart.
+    digest: 20f9ffaae6473f0dc53f6f38e6346dad749c24c0a625f9c9ac0cdc9881ff8d17
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - mongodb
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-mongodb
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-mongodb-1.1.4/stackai-mongodb-1.1.4.tgz
+    version: 1.1.4
+  - apiVersion: v2
     appVersion: 1.1.3
     created: "2025-09-23T00:10:47.5971107Z"
     description: Official StackAI MongoDB Helm chart.
@@ -58,6 +85,34 @@ entries:
     - https://github.com/stackai/stackai-helm/releases/download/stackai-mongodb-1.1.3/stackai-mongodb-1.1.3.tgz
     version: 1.1.3
   stackai-nginx-ingress:
+  - apiVersion: v2
+    appVersion: 1.10.4
+    created: "2025-09-23T01:56:09.673761904Z"
+    description: Official StackAI Nginx Ingress Controller Helm chart.
+    digest: 078450c2dd4652f08fc50a50764b5dbfd7c24f93b80da8a5276364f08be19c5b
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - nginx
+    - ingress
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-nginx-ingress
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-nginx-ingress-1.1.4/stackai-nginx-ingress-1.1.4.tgz
+    version: 1.1.4
   - apiVersion: v2
     appVersion: 1.10.3
     created: "2025-09-23T00:10:47.807244819Z"
@@ -88,6 +143,33 @@ entries:
     version: 1.1.3
   stackai-postgres:
   - apiVersion: v2
+    appVersion: 1.1.4
+    created: "2025-09-23T01:56:09.898178091Z"
+    description: A lightweight PostgreSQL database for Temporal
+    digest: d68b0ae0470560ac2bb456236d3d6d7a650835292b36842b30d8cb4b23ee9d0d
+    home: https://www.postgresql.org/
+    keywords:
+    - postgresql
+    - database
+    - temporal
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-postgres
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-postgres-1.1.4/stackai-postgres-1.1.4.tgz
+    version: 1.1.4
+  - apiVersion: v2
     appVersion: 1.1.3
     created: "2025-09-23T00:10:48.0660763Z"
     description: A lightweight PostgreSQL database for Temporal
@@ -115,6 +197,33 @@ entries:
     - https://github.com/stackai/stackai-helm/releases/download/stackai-postgres-1.1.3/stackai-postgres-1.1.3.tgz
     version: 1.1.3
   stackai-redis:
+  - apiVersion: v2
+    appVersion: 7.3.4
+    created: "2025-09-23T01:56:10.087220916Z"
+    description: Official StackAI Redis Helm chart.
+    digest: fbc04f94ce22a901ebba671f36a1038d5c95ece0eed771b54c3e252c38b9fdf7
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - redis
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-redis
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-redis-1.1.4/stackai-redis-1.1.4.tgz
+    version: 1.1.4
   - apiVersion: v2
     appVersion: 7.3.3
     created: "2025-09-23T00:10:48.311205203Z"
@@ -234,6 +343,33 @@ entries:
     version: 1.1.3
   stackai-supabase:
   - apiVersion: v2
+    appVersion: 1.1.4
+    created: "2025-09-23T01:56:10.332907194Z"
+    description: Official StackAI Supabase Helm chart.
+    digest: da4c86cb22a039455f1fb965dd3f451558def02bf4eb65237f232be34aab8610
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - supabase
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-supabase
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-supabase-1.1.4/stackai-supabase-1.1.4.tgz
+    version: 1.1.4
+  - apiVersion: v2
     appVersion: 1.1.3
     created: "2025-09-23T00:10:48.532923772Z"
     description: Official StackAI Supabase Helm chart.
@@ -324,6 +460,33 @@ entries:
     version: 1.1.3
   stackai-weaviate:
   - apiVersion: v2
+    appVersion: 1.26.4
+    created: "2025-09-23T01:56:10.545447181Z"
+    description: Official StackAI Weaviate Helm chart.
+    digest: 00733e4b8d9336bf148f44c204c6ba8b91f9ae06bccd47c4127340c7bbd5c8f5
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - weaviate
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-weaviate
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-weaviate-1.1.4/stackai-weaviate-1.1.4.tgz
+    version: 1.1.4
+  - apiVersion: v2
     appVersion: 1.26.3
     created: "2025-09-23T00:10:48.8030499Z"
     description: Official StackAI Weaviate Helm chart.
@@ -350,4 +513,4 @@ entries:
     urls:
     - https://github.com/stackai/stackai-helm/releases/download/stackai-weaviate-1.1.3/stackai-weaviate-1.1.3.tgz
     version: 1.1.3
-generated: "2025-09-23T00:10:59.889039633Z"
+generated: "2025-09-23T01:56:10.545621907Z"
