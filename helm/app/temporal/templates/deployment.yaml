@@ -39,6 +39,10 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.temporal.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: temporal-server
           image: "{{ .Values.temporal.image.repository }}:{{ .Values.temporal.image.tag }}"

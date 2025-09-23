@@ -6,40 +6,40 @@ chartVersion: "1.0.0"
 appVersion: "1.0.0"
 # Chart versions by category
 infrastructure:
-  chartVersion: "1.1.3"
-  appVersion: "1.1.3"
+  chartVersion: "1.1.4"
+  appVersion: "1.1.4"
   components:
     mongodb:
-      chartVersion: "1.1.3"
-      appVersion: "7.1.3"
+      chartVersion: "1.1.4"
+      appVersion: "7.1.4"
     redis:
-      chartVersion: "1.1.3"
-      appVersion: "7.3.3"
+      chartVersion: "1.1.4"
+      appVersion: "7.3.4"
     weaviate:
-      chartVersion: "1.1.3"
-      appVersion: "1.26.3"
+      chartVersion: "1.1.4"
+      appVersion: "1.26.4"
     supabase:
-      chartVersion: "1.1.3"
-      appVersion: "1.1.3"
+      chartVersion: "1.1.4"
+      appVersion: "1.1.4"
     nginx:
-      chartVersion: "1.1.3"
-      appVersion: "1.10.3"
+      chartVersion: "1.1.4"
+      appVersion: "1.10.4"
 application:
-  chartVersion: "1.1.3"
-  appVersion: "1.1.3"
+  chartVersion: "1.1.4"
+  appVersion: "1.1.4"
   components:
     stackend:
-      chartVersion: "1.1.3"
-      appVersion: "1.1.3"
+      chartVersion: "1.1.4"
+      appVersion: "1.1.4"
     stackweb:
-      chartVersion: "1.1.3"
-      appVersion: "1.1.3"
+      chartVersion: "1.1.4"
+      appVersion: "1.1.4"
     celery:
-      chartVersion: "1.1.3"
-      appVersion: "1.1.3"
+      chartVersion: "1.1.4"
+      appVersion: "1.1.4"
     repl:
-      chartVersion: "1.1.3"
-      appVersion: "1.1.3"
+      chartVersion: "1.1.4"
+      appVersion: "1.1.4"
 # Release information
 release:
   name: "stackai-v1.0.1"

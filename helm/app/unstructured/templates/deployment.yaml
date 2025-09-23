@@ -36,6 +36,10 @@ spec:
       securityContext:
         {{- omit .Values.unstructured.securityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
+      {{- with .Values.unstructured.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: unstructured
           image: "{{ .Values.unstructured.image.repository }}:{{ .Values.unstructured.image.tag }}"

@@ -36,6 +36,10 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.repl.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: repl
           image: "{{ .Values.repl.image.repository }}:{{ .Values.repl.image.tag }}"
