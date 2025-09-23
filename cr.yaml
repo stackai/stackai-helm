@@ -9,9 +9,7 @@ charts-repo: https://stackai.github.io/stackai-helm
 
 # Chart directories to scan for charts
 # Each subdirectory in these paths will be treated as a separate chart
-charts-dirs:
-  - helm/infra
-  - helm/app
+# Note: chart-releaser-action handles one directory at a time
 
 # Chart name patterns (optional)
 # If not specified, directory names will be used as chart names

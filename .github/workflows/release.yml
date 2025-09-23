@@ -21,10 +21,24 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Run chart-releaser
+      - name: Run chart-releaser for infra charts
         uses: helm/chart-releaser-action@v1.7.0
         with:
-          charts_dir: helm/infra, helm/app
+          charts_dir: helm/infra
           config: cr.yaml
+          version: v1.7.0
+          mark_as_latest: true
+          packages_with_index: false
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Run chart-releaser for app charts
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: helm/app
+          config: cr.yaml
+          version: v1.7.0
+          mark_as_latest: true
+          packages_with_index: false
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
