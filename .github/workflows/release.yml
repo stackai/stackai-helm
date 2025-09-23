@@ -40,5 +40,6 @@ jobs:
           version: v1.7.0
           mark_as_latest: true
           packages_with_index: false
+          skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
