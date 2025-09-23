@@ -32,8 +32,6 @@ port-forward: ## Start port forwarding for all services
 setup: ## Complete setup (init + apply)
 	@./scripts/setup.sh
 
-setup-acr: ## Setup Azure Container Registry authentication
-	@./scripts/setup-acr-auth.sh
 
 clean: ## Clean up local files
 	rm -rf .terraform/

@@ -21,6 +21,18 @@ This Terraform configuration sets up a complete local development environment fo
 
    ```bash
    cd infra
+
+   cp terraform.tfvars.example terraform.tfvars
+   nano terraform.tfvars
+
+   >>> You should see the ACR credentials in the file
+   >>> acr_username = "username"
+   >>> acr_password = "password"
+
+   >>> Change the ACR credentials to your own and save and exit
+   >>> How to get them? go here Stackai/repository permissions/token
+   >>> click on the token and generate new ones and copy the username and password
+
    terraform init
    terraform plan
    terraform apply

@@ -52,9 +52,7 @@ if [ ! -f "terraform.tfvars" ]; then
     echo "📝 Creating terraform.tfvars from example..."
     cp terraform.tfvars.example terraform.tfvars
     echo "   Please review terraform.tfvars and customize if needed"
-    echo "   ⚠️  IMPORTANT: You need to add your ACR credentials to terraform.tfvars"
-    echo "      Get them with: az acr credential show --name stackai --query 'username' -o tsv"
-    echo "      Then add acr_username and acr_password to terraform.tfvars"
+    echo "   ✅ ACR credentials are pre-configured in Terraform"
 fi
 
 # Plan the deployment
