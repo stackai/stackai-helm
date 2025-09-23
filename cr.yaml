@@ -24,12 +24,6 @@ release-name-pattern: "stackai-{{ .Name }}"
 # Chart versioning strategy
 version-strategy: "semantic"
 
-# Pre-release handling
-prerelease: false
-
-# Skip charts that haven't changed
-skip-existing: true
-
 # Generate changelog
 generate-changelog: true
 
