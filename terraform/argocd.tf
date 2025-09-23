@@ -373,9 +373,12 @@ resource "kubectl_manifest" "argocd_unstructured" {
   })
 }
 
-# Create ArgoCD application for Stackend
+# Create ArgoCD application for Stackend - THIRD in application deployment order
 resource "kubectl_manifest" "argocd_stackend" {
-  depends_on = [time_sleep.argocd_wait]
+  depends_on = [
+    time_sleep.argocd_wait,
+    kubectl_manifest.argocd_repl
+  ]
 
   yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"
@@ -417,9 +420,12 @@ resource "kubectl_manifest" "argocd_stackend" {
   })
 }
 
-# Create ArgoCD application for Stackweb
+# Create ArgoCD application for Stackweb - FOURTH in application deployment order
 resource "kubectl_manifest" "argocd_stackweb" {
-  depends_on = [time_sleep.argocd_wait]
+  depends_on = [
+    time_sleep.argocd_wait,
+    kubectl_manifest.argocd_stackend
+  ]
 
   yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"
@@ -461,9 +467,19 @@ resource "kubectl_manifest" "argocd_stackweb" {
   })
 }
 
-# Create ArgoCD application for Celery
+# Create ArgoCD application for Celery - FIRST in application deployment order
 resource "kubectl_manifest" "argocd_celery" {
-  depends_on = [time_sleep.argocd_wait]
+  depends_on = [
+    time_sleep.argocd_wait,
+    kubectl_manifest.argocd_nginx,
+    kubectl_manifest.argocd_supabase,
+    kubectl_manifest.argocd_mongodb,
+    kubectl_manifest.argocd_redis,
+    kubectl_manifest.argocd_postgres,
+    kubectl_manifest.argocd_weaviate,
+    kubectl_manifest.argocd_temporal,
+    kubectl_manifest.argocd_unstructured
+  ]
 
   yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"
@@ -505,9 +521,12 @@ resource "kubectl_manifest" "argocd_celery" {
   })
 }
 
-# Create ArgoCD application for Repl
+# Create ArgoCD application for Repl - SECOND in application deployment order
 resource "kubectl_manifest" "argocd_repl" {
-  depends_on = [time_sleep.argocd_wait]
+  depends_on = [
+    time_sleep.argocd_wait,
+    kubectl_manifest.argocd_celery
+  ]
 
   yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"

@@ -6,11 +6,11 @@ temporal:
   replicaCount: 1
   resources:
     requests:
-      memory: 512Mi
-      cpu: 200m
-    limits:
       memory: 1Gi
       cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 1000m
   env:
     DB: "postgres12"
     DB_PORT: "5432"
@@ -39,11 +39,11 @@ temporalWeb:
   replicaCount: 1
   resources:
     requests:
-      memory: 128Mi
-      cpu: 100m
-    limits:
-      memory: 256Mi
+      memory: 512Mi
       cpu: 200m
+    limits:
+      memory: 1Gi
+      cpu: 500m
   env:
     TEMPORAL_ADDRESS: "temporal-stackai-temporal-server:7233"
     TEMPORAL_CORS_ORIGINS: "http://temporal.localhost,https://temporal.localhost"

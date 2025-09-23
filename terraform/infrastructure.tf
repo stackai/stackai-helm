@@ -112,7 +112,7 @@ resource "helm_release" "unstructured" {
   ]
 }
 
-# Deploy Stackend
+# Deploy Stackend - THIRD in the application deployment order
 resource "helm_release" "stackend" {
   name      = "stackend"
   chart     = "${path.module}/../helm/app/stackend"
@@ -124,11 +124,17 @@ resource "helm_release" "stackend" {
 
   depends_on = [
     kubernetes_namespace.stackai_processing,
-    helm_release.nginx_ingress
+    time_sleep.repl_wait
   ]
 }
 
-# Deploy Stackweb
+# Wait for Stackend to be ready
+resource "time_sleep" "stackend_wait" {
+  depends_on = [helm_release.stackend]
+  create_duration = "30s"
+}
+
+# Deploy Stackweb - FOURTH in the application deployment order
 resource "helm_release" "stackweb" {
   name      = "stackweb"
   chart     = "${path.module}/../helm/app/stackweb"
@@ -140,11 +146,11 @@ resource "helm_release" "stackweb" {
 
   depends_on = [
     kubernetes_namespace.stackai_processing,
-    helm_release.nginx_ingress
+    time_sleep.stackend_wait
   ]
 }
 
-# Deploy Celery
+# Deploy Celery - FIRST in the application deployment order
 resource "helm_release" "celery" {
   name      = "celery"
   chart     = "${path.module}/../helm/app/celery"
@@ -156,11 +162,17 @@ resource "helm_release" "celery" {
 
   depends_on = [
     kubernetes_namespace.stackai_processing,
-    helm_release.nginx_ingress
+    time_sleep.infrastructure_ready
   ]
 }
 
-# Deploy Repl
+# Wait for Celery to be ready
+resource "time_sleep" "celery_wait" {
+  depends_on = [helm_release.celery]
+  create_duration = "30s"
+}
+
+# Deploy Repl - SECOND in the application deployment order
 resource "helm_release" "repl" {
   name      = "repl"
   chart     = "${path.module}/../helm/app/repl"
@@ -172,6 +184,12 @@ resource "helm_release" "repl" {
 
   depends_on = [
     kubernetes_namespace.stackai_processing,
-    helm_release.nginx_ingress
+    time_sleep.celery_wait
   ]
+}
+
+# Wait for Repl to be ready
+resource "time_sleep" "repl_wait" {
+  depends_on = [helm_release.repl]
+  create_duration = "30s"
 }
