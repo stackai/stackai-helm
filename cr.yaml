@@ -1,11 +1,10 @@
 # Chart Releaser Configuration for StackAI Helm Charts
 # This configuration enables separate releases for each chart module
-
 owner: stackai
 git-repo: stackai-helm
 package-path: .cr-release-packages
 index-path: index.yaml
-pages-branch: gh-pages
+pages-branch: main
 charts-repo: https://stackai.github.io/stackai-helm
 
 # Chart directories to scan for charts
