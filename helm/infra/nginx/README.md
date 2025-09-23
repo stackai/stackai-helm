@@ -1,6 +1,6 @@
 # stackai-nginx-ingress
 
-![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.10.1](https://img.shields.io/badge/AppVersion-1.10.1-informational?style=flat-square)
+![Version: 1.1.3](https://img.shields.io/badge/Version-1.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.10.3](https://img.shields.io/badge/AppVersion-1.10.3-informational?style=flat-square)
 
 Official StackAI Nginx Ingress Controller Helm chart.
 
@@ -20,6 +20,7 @@ Official StackAI Nginx Ingress Controller Helm chart.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| controller.admissionWebhooks.enabled | bool | `false` |  |
 | controller.affinity | object | `{}` |  |
 | controller.config.add-forwarded-for-headers | string | `"true"` |  |
 | controller.config.client-body-buffer-size | string | `"128k"` |  |
@@ -36,7 +37,9 @@ Official StackAI Nginx Ingress Controller Helm chart.
 | controller.config.rate-limit-window | string | `"1m"` |  |
 | controller.config.ssl-ciphers | string | `"ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES256-GCM-SHA384,ECDHE-RSA-AES128-SHA,ECDHE-RSA-AES256-SHA,ECDHE-RSA-AES128-SHA256,ECDHE-RSA-AES256-SHA384,ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES256-GCM-SHA384,ECDHE-RSA-AES128-SHA256,ECDHE-RSA-AES256-SHA384"` |  |
 | controller.config.ssl-protocols | string | `"TLSv1.2 TLSv1.3"` |  |
+| controller.dnsPolicy | string | `"ClusterFirstWithHostNet"` |  |
 | controller.enabled | bool | `true` |  |
+| controller.hostNetwork | bool | `true` |  |
 | controller.image.pullPolicy | string | `"IfNotPresent"` |  |
 | controller.image.repository | string | `"registry.k8s.io/ingress-nginx/controller"` |  |
 | controller.image.tag | string | `"v1.9.4"` |  |
@@ -54,7 +57,7 @@ Official StackAI Nginx Ingress Controller Helm chart.
 | controller.livenessProbe.periodSeconds | int | `10` |  |
 | controller.livenessProbe.successThreshold | int | `1` |  |
 | controller.livenessProbe.timeoutSeconds | int | `1` |  |
-| controller.nodeSelector | object | `{}` |  |
+| controller.nodeSelector."node-role.kubernetes.io/control-plane" | string | `""` |  |
 | controller.podSecurityContext.enabled | bool | `true` |  |
 | controller.podSecurityContext.fsGroup | int | `65534` |  |
 | controller.podSecurityContext.runAsGroup | int | `101` |  |
@@ -79,35 +82,23 @@ Official StackAI Nginx Ingress Controller Helm chart.
 | controller.securityContext.runAsGroup | int | `101` |  |
 | controller.securityContext.runAsNonRoot | bool | `true` |  |
 | controller.securityContext.runAsUser | int | `101` |  |
-| controller.service.annotations."service.beta.kubernetes.io/azure-load-balancer-internal" | string | `"true"` |  |
-| controller.service.annotations."service.beta.kubernetes.io/azure-load-balancer-internal-subnet" | string | `"subnet-name"` |  |
+| controller.service.annotations | object | `{}` |  |
 | controller.service.ports.http | int | `80` |  |
 | controller.service.ports.https | int | `443` |  |
 | controller.service.type | string | `"LoadBalancer"` |  |
-| controller.tolerations | list | `[]` |  |
+| controller.tolerations[0].effect | string | `"NoSchedule"` |  |
+| controller.tolerations[0].key | string | `"node-role.kubernetes.io/control-plane"` |  |
+| controller.tolerations[0].operator | string | `"Exists"` |  |
 | defaultBackend.enabled | bool | `true` |  |
 | defaultBackend.image.pullPolicy | string | `"IfNotPresent"` |  |
-| defaultBackend.image.repository | string | `"registry.k8s.io/defaultbackend-amd64"` |  |
-| defaultBackend.image.tag | string | `"1.5"` |  |
-| defaultBackend.podSecurityContext.enabled | bool | `true` |  |
-| defaultBackend.podSecurityContext.fsGroup | int | `65534` |  |
-| defaultBackend.podSecurityContext.runAsGroup | int | `65534` |  |
-| defaultBackend.podSecurityContext.runAsNonRoot | bool | `true` |  |
-| defaultBackend.podSecurityContext.runAsUser | int | `65534` |  |
+| defaultBackend.image.repository | string | `"nginx"` |  |
+| defaultBackend.image.tag | string | `"1.25-alpine"` |  |
 | defaultBackend.resources.limits.cpu | string | `"50m"` |  |
 | defaultBackend.resources.limits.memory | string | `"64Mi"` |  |
 | defaultBackend.resources.requests.cpu | string | `"10m"` |  |
 | defaultBackend.resources.requests.memory | string | `"32Mi"` |  |
-| defaultBackend.securityContext.enabled | bool | `true` |  |
-| defaultBackend.securityContext.fsGroup | int | `65534` |  |
-| defaultBackend.securityContext.runAsGroup | int | `65534` |  |
-| defaultBackend.securityContext.runAsNonRoot | bool | `true` |  |
-| defaultBackend.securityContext.runAsUser | int | `65534` |  |
-| extraObjects | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
 | nameOverride | string | `""` |  |
-| podDisruptionBudget.enabled | bool | `false` |  |
-| podDisruptionBudget.minAvailable | int | `1` |  |
 | rbac.create | bool | `true` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.automount | bool | `true` |  |
@@ -164,3 +155,6 @@ Official StackAI Nginx Ingress Controller Helm chart.
 | serviceRouting.services.weaviate.path | string | `"/weaviate"` |  |
 | serviceRouting.services.weaviate.port | int | `8080` |  |
 | serviceRouting.services.weaviate.service | string | `"weaviate"` |  |
+
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)
