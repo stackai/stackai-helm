@@ -119,9 +119,9 @@ stackweb:
 
   # Liveness and Readiness Probes
   livenessProbe:
-    enabled: false
+    enabled: true
     httpGet:
-      path: /health
+      path: /
       port: http
       scheme: HTTP
     initialDelaySeconds: 30
@@ -131,9 +131,9 @@ stackweb:
     successThreshold: 1
 
   readinessProbe:
-    enabled: false
+    enabled: true
     httpGet:
-      path: /health
+      path: /
       port: http
       scheme: HTTP
     initialDelaySeconds: 5

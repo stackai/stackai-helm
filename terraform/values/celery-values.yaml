@@ -5,6 +5,9 @@ worker:
     tag: "v1.0.0"
     pullPolicy: IfNotPresent
 
+  # Celery application module name
+  celeryApp: "apps.worker.celery_tasks"
+
   # Image pull secrets for private registry
   imagePullSecrets:
     - name: acr-secret
@@ -112,13 +115,13 @@ worker:
       command:
         - celery
         - -A
-        - tasks
+        - apps.worker.celery_tasks
         - inspect
         - ping
-    initialDelaySeconds: 30
-    periodSeconds: 30
-    timeoutSeconds: 10
-    failureThreshold: 3
+    initialDelaySeconds: 120
+    periodSeconds: 60
+    timeoutSeconds: 30
+    failureThreshold: 10
     successThreshold: 1
 
   readinessProbe:
@@ -127,13 +130,13 @@ worker:
       command:
         - celery
         - -A
-        - tasks
+        - apps.worker.celery_tasks
         - inspect
         - ping
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
+    initialDelaySeconds: 90
+    periodSeconds: 30
+    timeoutSeconds: 20
+    failureThreshold: 10
     successThreshold: 1
 
 # Ingress Configuration
