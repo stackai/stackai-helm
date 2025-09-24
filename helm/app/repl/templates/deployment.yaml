@@ -7,15 +7,18 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "repl.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
 spec:
   replicas: {{ .Values.repl.replicaCount }}
   selector:
     matchLabels:
       {{- include "repl.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
   template:
     metadata:
       labels:
         {{- include "repl.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api
     spec:
       {{- with .Values.serviceAccount.create }}
       serviceAccountName: {{ include "repl.serviceAccountName" $ }}

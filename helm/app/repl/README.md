@@ -1,6 +1,6 @@
 # stackai-repl
 
-![Version: 1.1.4](https://img.shields.io/badge/Version-1.1.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.4](https://img.shields.io/badge/AppVersion-1.1.4-informational?style=flat-square)
+![Version: 1.1.5](https://img.shields.io/badge/Version-1.1.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.5](https://img.shields.io/badge/AppVersion-1.1.5-informational?style=flat-square)
 
 Official StackAI Repl API Helm chart.
 
@@ -55,6 +55,7 @@ Official StackAI Repl API Helm chart.
 | repl.image.pullPolicy | string | `"IfNotPresent"` |  |
 | repl.image.repository | string | `"your-acr.azurecr.io/stackai/repl"` |  |
 | repl.image.tag | string | `"latest"` |  |
+| repl.imagePullSecrets | list | `[]` |  |
 | repl.livenessProbe.enabled | bool | `true` |  |
 | repl.livenessProbe.failureThreshold | int | `3` |  |
 | repl.livenessProbe.httpGet.path | string | `"/health"` |  |
@@ -85,6 +86,7 @@ Official StackAI Repl API Helm chart.
 | repl.resources.requests.cpu | string | `"100m"` |  |
 | repl.resources.requests.memory | string | `"256Mi"` |  |
 | repl.securityContext.enabled | bool | `true` |  |
+| repl.securityContext.fsGroup | int | `1000` |  |
 | repl.securityContext.runAsGroup | int | `1000` |  |
 | repl.securityContext.runAsNonRoot | bool | `true` |  |
 | repl.securityContext.runAsUser | int | `1000` |  |

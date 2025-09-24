@@ -88,6 +88,9 @@ stackend:
   # Affinity
   affinity: {}
 
+  # Image Pull Secrets
+  imagePullSecrets: []
+
   # Liveness and Readiness Probes
   livenessProbe:
     enabled: true

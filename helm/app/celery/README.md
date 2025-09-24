@@ -1,6 +1,6 @@
 # stackai-celery
 
-![Version: 1.1.4](https://img.shields.io/badge/Version-1.1.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.4](https://img.shields.io/badge/AppVersion-1.1.4-informational?style=flat-square)
+![Version: 1.1.5](https://img.shields.io/badge/Version-1.1.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.5](https://img.shields.io/badge/AppVersion-1.1.5-informational?style=flat-square)
 
 Official StackAI Celery Worker Helm chart.
 
@@ -56,6 +56,7 @@ Official StackAI Celery Worker Helm chart.
 | worker.image.pullPolicy | string | `"IfNotPresent"` |  |
 | worker.image.repository | string | `"your-acr.azurecr.io/stackai/celery-worker"` |  |
 | worker.image.tag | string | `"latest"` |  |
+| worker.imagePullSecrets | list | `[]` |  |
 | worker.livenessProbe.enabled | bool | `true` |  |
 | worker.livenessProbe.exec.command[0] | string | `"celery"` |  |
 | worker.livenessProbe.exec.command[1] | string | `"-A"` |  |

@@ -1,6 +1,6 @@
 # stackai-stackend
 
-![Version: 1.1.4](https://img.shields.io/badge/Version-1.1.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.4](https://img.shields.io/badge/AppVersion-1.1.4-informational?style=flat-square)
+![Version: 1.1.5](https://img.shields.io/badge/Version-1.1.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.5](https://img.shields.io/badge/AppVersion-1.1.5-informational?style=flat-square)
 
 Official StackAI Stackend Backend Helm chart.
 
@@ -59,6 +59,7 @@ Official StackAI Stackend Backend Helm chart.
 | stackend.image.pullPolicy | string | `"IfNotPresent"` |  |
 | stackend.image.repository | string | `"your-acr.azurecr.io/stackai/stackend"` |  |
 | stackend.image.tag | string | `"latest"` |  |
+| stackend.imagePullSecrets | list | `[]` |  |
 | stackend.livenessProbe.enabled | bool | `true` |  |
 | stackend.livenessProbe.failureThreshold | int | `3` |  |
 | stackend.livenessProbe.httpGet.path | string | `"/health"` |  |

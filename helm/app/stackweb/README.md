@@ -1,6 +1,6 @@
 # stackai-stackweb
 
-![Version: 1.1.4](https://img.shields.io/badge/Version-1.1.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.4](https://img.shields.io/badge/AppVersion-1.1.4-informational?style=flat-square)
+![Version: 1.1.5](https://img.shields.io/badge/Version-1.1.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.1.5](https://img.shields.io/badge/AppVersion-1.1.5-informational?style=flat-square)
 
 Official StackAI Stackweb Frontend Helm chart.
 
@@ -56,6 +56,7 @@ Official StackAI Stackweb Frontend Helm chart.
 | stackweb.image.pullPolicy | string | `"IfNotPresent"` |  |
 | stackweb.image.repository | string | `"your-acr.azurecr.io/stackai/stackweb"` |  |
 | stackweb.image.tag | string | `"latest"` |  |
+| stackweb.imagePullSecrets | list | `[]` |  |
 | stackweb.livenessProbe.enabled | bool | `true` |  |
 | stackweb.livenessProbe.failureThreshold | int | `3` |  |
 | stackweb.livenessProbe.httpGet.path | string | `"/"` |  |

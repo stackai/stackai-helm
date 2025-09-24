@@ -7,6 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "repl.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
 spec:
   type: {{ .Values.repl.service.type }}
   ports:
@@ -16,4 +17,5 @@ spec:
       name: http
   selector:
     {{- include "repl.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
 {{- end }}
