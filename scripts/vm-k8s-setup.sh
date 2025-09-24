@@ -332,10 +332,6 @@ update_tiptap_token() {
         # Update TIPTAP_PRO_TOKEN
         sed -i "s|TIPTAP_PRO_TOKEN: \".*\"|TIPTAP_PRO_TOKEN: \"$token\"|g" values/stakweb-values.yaml
 
-        # Update NPM_RC with the new token
-        local npm_rc="registry=https://registry.npmjs.org\\n@tiptap-pro:registry=https://registry.tiptap.dev/\\n//registry.tiptap.dev/:_authToken=\${TIPTAP_PRO_TOKEN}"
-        sed -i "s|NPM_RC: \".*\"|NPM_RC: \"$npm_rc\"|g" values/stakweb-values.yaml
-
         print_status "Tiptap Pro Token updated in stakweb-values.yaml ✓"
     elif [ -z "$token" ] && [ -f "values/stakweb-values.yaml" ]; then
         print_status "Tiptap Pro Token not provided - using free version ✓"

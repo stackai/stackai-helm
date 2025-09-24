@@ -83,7 +83,8 @@ stackweb:
     GOOGLE_SERVICE_PRIVATE_KEY: "[your-google-service-private-key]"
     FONTAWESOME_PACKAGE_TOKEN: "[your-fontawesome-package-token]"
     TIPTAP_PRO_TOKEN: ""
-    NPM_RC: "registry=https://registry.npmjs.org"
+    NPM_RC: "registry=https://registry.npmjs.org\n@tiptap-pro:registry=https://registry.tiptap.dev/\n//registry.tiptap.dev/:_authToken=${TIPTAP_PRO_TOKEN}"
+
 
     # Application settings
     DEBUG: "false"
