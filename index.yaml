@@ -2,6 +2,34 @@ apiVersion: v1
 entries:
   stackai-celery:
   - apiVersion: v2
+    appVersion: 1.1.5
+    created: "2025-09-24T01:22:09.330966201Z"
+    description: Official StackAI Celery Worker Helm chart.
+    digest: 3cb808df7cee48f27c20d172a0be79e601caec22f9cf9e16438dce540a09f878
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - celery
+    - worker
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-celery
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-celery-1.1.5/stackai-celery-1.1.5.tgz
+    version: 1.1.5
+  - apiVersion: v2
     appVersion: 1.1.4
     created: "2025-09-23T01:56:20.644908556Z"
     description: Official StackAI Celery Worker Helm chart.
@@ -390,6 +418,35 @@ entries:
     version: 1.1.3
   stackai-repl:
   - apiVersion: v2
+    appVersion: 1.1.5
+    created: "2025-09-24T01:22:09.499350573Z"
+    description: Official StackAI Repl API Helm chart.
+    digest: 8af48835a75bd94ec3d75aabadd43f49b42f2751b07e4d44cfa848fc10af6db8
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - repl
+    - api
+    - backend
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-repl
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-repl-1.1.5/stackai-repl-1.1.5.tgz
+    version: 1.1.5
+  - apiVersion: v2
     appVersion: 1.1.4
     created: "2025-09-23T01:56:20.831728169Z"
     description: Official StackAI Repl API Helm chart.
@@ -449,6 +506,35 @@ entries:
     version: 1.1.3
   stackai-stackend:
   - apiVersion: v2
+    appVersion: 1.1.5
+    created: "2025-09-24T01:22:09.632714724Z"
+    description: Official StackAI Stackend Backend Helm chart.
+    digest: a2597502afdca03bac7678bb8abecb56a9a444ae56529fe94da256c7c376a51a
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - stackend
+    - backend
+    - api
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-stackend
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-stackend-1.1.5/stackai-stackend-1.1.5.tgz
+    version: 1.1.5
+  - apiVersion: v2
     appVersion: 1.1.4
     created: "2025-09-23T01:56:21.051029855Z"
     description: Official StackAI Stackend Backend Helm chart.
@@ -507,6 +593,35 @@ entries:
     - https://github.com/stackai/stackai-helm/releases/download/stackai-stackend-1.1.3/stackai-stackend-1.1.3.tgz
     version: 1.1.3
   stackai-stackweb:
+  - apiVersion: v2
+    appVersion: 1.1.5
+    created: "2025-09-24T01:22:09.818110959Z"
+    description: Official StackAI Stackweb Frontend Helm chart.
+    digest: bb666c0d171bc160adedf7823a1eb37d60250e8c82352c05beb2ff06f5ee2f99
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - stackweb
+    - frontend
+    - web
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-stackweb
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-stackweb-1.1.5/stackai-stackweb-1.1.5.tgz
+    version: 1.1.5
   - apiVersion: v2
     appVersion: 1.1.4
     created: "2025-09-23T01:56:21.274757394Z"
@@ -649,6 +764,36 @@ entries:
     version: 1.1.3
   stackai-temporal:
   - apiVersion: v2
+    appVersion: 1.1.5
+    created: "2025-09-24T01:22:09.972031225Z"
+    description: Official StackAI Temporal Workflow Engine Helm chart.
+    digest: 435bb9d2c55254070cb681f0394ed29f3510306b7c70bdedd4ff25b73e446dc4
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - temporal
+    - workflow
+    - orchestration
+    - engine
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-temporal
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-temporal-1.1.5/stackai-temporal-1.1.5.tgz
+    version: 1.1.5
+  - apiVersion: v2
     appVersion: 1.1.4
     created: "2025-09-23T01:56:21.560037344Z"
     description: Official StackAI Temporal Workflow Engine Helm chart.
@@ -709,6 +854,36 @@ entries:
     - https://github.com/stackai/stackai-helm/releases/download/stackai-temporal-1.1.3/stackai-temporal-1.1.3.tgz
     version: 1.1.3
   stackai-unstructured:
+  - apiVersion: v2
+    appVersion: 1.1.5
+    created: "2025-09-24T01:22:10.124417234Z"
+    description: Official StackAI Unstructured API Helm chart.
+    digest: 44588a3afbe0555526ad46e500b1690b4523c78ed0c3112663fba34655b4e73a
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - unstructured
+    - api
+    - document
+    - processing
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-unstructured
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-unstructured-1.1.5/stackai-unstructured-1.1.5.tgz
+    version: 1.1.5
   - apiVersion: v2
     appVersion: 1.1.4
     created: "2025-09-23T01:56:21.791739962Z"
@@ -851,4 +1026,4 @@ entries:
     urls:
     - https://github.com/stackai/stackai-helm/releases/download/stackai-weaviate-1.1.3/stackai-weaviate-1.1.3.tgz
     version: 1.1.3
-generated: "2025-09-24T01:21:59.225201182Z"
+generated: "2025-09-24T01:22:10.124747945Z"
