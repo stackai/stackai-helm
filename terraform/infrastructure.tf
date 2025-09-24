@@ -1,14 +1,23 @@
-# Deploy Custom Nginx Ingress Controller
+# Deploy Official Nginx Ingress Controller
 resource "helm_release" "nginx_ingress" {
-  name      = "nginx-ingress"
-  chart     = "${path.module}/../helm/infra/nginx"
-  namespace = kubernetes_namespace.stackai_infra.metadata[0].name
+  name       = "nginx-ingress"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  chart      = "ingress-nginx"
+  version    = "4.8.3"
+  namespace  = kubernetes_namespace.stackai_infra.metadata[0].name
 
   values = [
     file("${path.module}/values/nginx-dev.yaml")
   ]
 
   depends_on = [kubernetes_namespace.stackai_infra]
+}
+
+# Apply the generated ingress configuration
+resource "kubectl_manifest" "stackai_ingress" {
+  depends_on = [helm_release.nginx_ingress]
+  # Use the generated ingress configuration if it exists, otherwise use template
+  yaml_body = fileexists("${path.module}/ingress-config.yaml") ? file("${path.module}/ingress-config.yaml") : file("${path.module}/ingress-template.yaml")
 }
 
 # Deploy MongoDB
@@ -130,7 +139,7 @@ resource "helm_release" "stackend" {
 
 # Wait for Stackend to be ready
 resource "time_sleep" "stackend_wait" {
-  depends_on = [helm_release.stackend]
+  depends_on      = [helm_release.stackend]
   create_duration = "30s"
 }
 
@@ -168,7 +177,7 @@ resource "helm_release" "celery" {
 
 # Wait for Celery to be ready
 resource "time_sleep" "celery_wait" {
-  depends_on = [helm_release.celery]
+  depends_on      = [helm_release.celery]
   create_duration = "30s"
 }
 
@@ -190,6 +199,6 @@ resource "helm_release" "repl" {
 
 # Wait for Repl to be ready
 resource "time_sleep" "repl_wait" {
-  depends_on = [helm_release.repl]
+  depends_on      = [helm_release.repl]
   create_duration = "30s"
 }

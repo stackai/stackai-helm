@@ -1,33 +1,17 @@
-# Development values for StackAI Nginx Ingress
-nameOverride: ""
-fullnameOverride: ""
+# Official Nginx Ingress Controller Configuration for StackAI
+# This replaces the custom nginx chart with the official ingress-nginx chart
 
-# Service Account
-serviceAccount:
-  create: true
-  automount: true
-  annotations: {}
-  name: ""
-
-# Nginx Ingress Controller Configuration
 controller:
-  enabled: true
-  image:
-    repository: registry.k8s.io/ingress-nginx/controller
-    tag: v1.9.4
-    pullPolicy: IfNotPresent
-
-  # Replica Configuration
-  replicaCount: 1
-
-  # Service Configuration for Docker Desktop
+  # Service Configuration - Works for both Docker Desktop and VM deployments
   service:
     type: LoadBalancer
     ports:
       http: 80
       https: 443
-    # Remove Azure-specific annotations for Docker Desktop
-    annotations: {}
+    # Annotations for VM deployments (Azure Load Balancer)
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: "stackai-rg"
 
   # Ingress Class Configuration
   ingressClassResource:
@@ -101,7 +85,7 @@ controller:
     runAsNonRoot: true
     fsGroup: 65534
 
-  # Force NGINX to run on control-plane node for Docker Desktop
+  # Node Selector - Fixed to match your node label
   nodeSelector:
     node-role.kubernetes.io/control-plane: "true"
 
@@ -160,85 +144,97 @@ defaultBackend:
 rbac:
   create: true
 
-# Service Routing Configuration - ENABLE THIS for localhost access
-serviceRouting:
+# Service Account
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# Metrics
+metrics:
   enabled: true
-  services:
-    # ArgoCD
-    argocd:
-      enabled: true
-      service: "argocd-server"
-      port: 80
-      path: "/argocd"
+  service:
+    type: ClusterIP
+    annotations: {}
 
-    # Supabase services
-    supabase:
-      enabled: true
-      api:
-        service: "supabase-kong"
-        port: 8000
-        path: "/supabase/rest"
-      auth:
-        service: "supabase-kong"
-        port: 8000
-        path: "/supabase/auth"
-      realtime:
-        service: "supabase-kong"
-        port: 8000
-        path: "/supabase/realtime"
-      storage:
-        service: "supabase-kong"
-        port: 8000
-        path: "/supabase/storage"
-      functions:
-        service: "supabase-kong"
-        port: 8000
-        path: "/supabase/functions"
-      graphql:
-        service: "supabase-kong"
-        port: 8000
-        path: "/supabase/graphql"
-      studio:
-        service: "supabase-studio"
-        port: 3000
-        path: "/supabase/studio"
+# Prometheus monitoring
+prometheus:
+  enabled: false
+  serviceMonitor:
+    enabled: false
 
-    # Temporal
-    temporal:
-      enabled: true
-      service: "temporal-web"
-      port: 8088
-      path: "/temporal"
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
 
-    # Unstructured API
-    unstructured:
-      enabled: true
-      service: "unstructured"
-      port: 8000
-      path: "/unstructured"
+# Autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 11
+  targetCPUUtilizationPercentage: 50
+  targetMemoryUtilizationPercentage: 50
 
-    # Weaviate
-    weaviate:
-      enabled: true
-      service: "weaviate"
-      port: 8080
-      path: "/weaviate"
+# Pod Annotations
+podAnnotations: {}
 
-    # Data stores (for development access)
-    mongodb:
-      enabled: true
-      service: "mongodb"
-      port: 27017
-      path: "/mongodb"
+# Pod Labels
+podLabels: {}
 
-    redis:
-      enabled: true
-      service: "redis"
-      port: 6379
-      path: "/redis"
+# Extra volumes
+extraVolumes: []
 
-    postgres:
-      enabled: true
-      service: "postgres"
-      port: 5432
-      path: "/postgres"
+# Extra volume mounts
+extraVolumeMounts: []
+
+# Extra containers
+extraContainers: []
+
+# Extra init containers
+extraInitContainers: []
+
+# Extra environment variables
+extraEnvVars: []
+
+# Extra environment variables from secrets/configmaps
+extraEnvVarsFrom: []
+
+# Extra ports
+extraPorts: []
+
+# Extra arguments
+extraArgs: {}
+
+# Extra labels
+extraLabels: {}
+
+# Extra annotations
+extraAnnotations: {}
+
+# Lifecycle hooks
+lifecycle: {}
+
+# Termination grace period
+terminationGracePeriodSeconds: 300
+
+# Update strategy
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 1
+
+# Revision history limit
+revisionHistoryLimit: 10
+
+# Progress deadline seconds
+progressDeadlineSeconds: 600
+
+# Deployment strategy
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 1

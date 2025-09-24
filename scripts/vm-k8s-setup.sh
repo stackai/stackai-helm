@@ -500,6 +500,314 @@ deploy_stackai() {
     fi
 }
 
+# Function to generate ingress configuration for VM deployment
+generate_vm_ingress() {
+    print_step "Generating nginx ingress configuration for VM deployment..."
+
+    # Navigate to terraform directory
+    cd terraform
+
+    # Create ingress configuration based on domain and SSL settings
+    local ssl_redirect="false"
+    if [ "$ENABLE_SSL" = "true" ]; then
+        ssl_redirect="true"
+    fi
+
+    # Generate the ingress configuration
+    cat > ingress-config.yaml <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stackai-services-ingress
+  namespace: stackai-infra
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "$ssl_redirect"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "$ssl_redirect"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,apikey"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "4k"
+    nginx.ingress.kubernetes.io/proxy-buffers: "4 32k"
+    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "8k"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  rules:
+  # Main application domain
+  - host: $DOMAIN
+    http:
+      paths:
+      # Default route to StackWeb
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: stackweb
+            port:
+              number: 3000
+
+  # API subdomain
+  - host: api.$DOMAIN
+    http:
+      paths:
+      # Stackend API
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: stackend
+            port:
+              number: 8000
+
+  # Supabase subdomain
+  - host: supabase.$DOMAIN
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: supabase-kong
+            port:
+              number: 8000
+
+  # Temporal subdomain
+  - host: temporal.$DOMAIN
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: temporal-web
+            port:
+              number: 8080
+
+  # Unstructured subdomain
+  - host: unstructured.$DOMAIN
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: unstructured
+            port:
+              number: 8000
+
+  # Repl subdomain
+  - host: repl.$DOMAIN
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: repl
+            port:
+              number: 8000
+
+  # Weaviate subdomain
+  - host: weaviate.$DOMAIN
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: weaviate
+            port:
+              number: 8080
+
+  # ArgoCD subdomain
+  - host: argocd.$DOMAIN
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 80
+
+  # Celery subdomain
+  - host: celery.$DOMAIN
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: celery
+            port:
+              number: 8002
+EOF
+
+    # Add TLS configuration if SSL is enabled
+    if [ "$ENABLE_SSL" = "true" ]; then
+        cat >> ingress-config.yaml <<EOF
+
+  # TLS configuration
+  tls:
+    - hosts:
+        - $DOMAIN
+        - api.$DOMAIN
+        - supabase.$DOMAIN
+        - temporal.$DOMAIN
+        - unstructured.$DOMAIN
+        - repl.$DOMAIN
+        - weaviate.$DOMAIN
+        - argocd.$DOMAIN
+        - celery.$DOMAIN
+      secretName: stackai-tls-secret
+EOF
+    fi
+
+    print_status "Ingress configuration generated ✓"
+
+    # Return to original directory
+    cd ..
+}
+
+# Function to update nginx values for VM deployment
+update_nginx_values() {
+    print_step "Updating nginx values for VM deployment..."
+
+    # Update nginx values file with VM-specific configuration
+    if [ -f "terraform/values/nginx-dev.yaml" ]; then
+        # Update SSL configuration based on SSL enabled status
+        if [ "$ENABLE_SSL" = "true" ]; then
+            sed -i "s/ssl-redirect: \"false\"/ssl-redirect: \"true\"/g" terraform/values/nginx-dev.yaml
+            sed -i "s/force-ssl-redirect: \"false\"/force-ssl-redirect: \"true\"/g" terraform/values/nginx-dev.yaml
+        else
+            sed -i "s/ssl-redirect: \"true\"/ssl-redirect: \"false\"/g" terraform/values/nginx-dev.yaml
+            sed -i "s/force-ssl-redirect: \"true\"/force-ssl-redirect: \"false\"/g" terraform/values/nginx-dev.yaml
+        fi
+
+        print_status "Nginx values updated for VM deployment ✓"
+    else
+        print_error "nginx-dev.yaml not found!"
+        exit 1
+    fi
+}
+
+# Function to deploy nginx with VM configuration
+deploy_nginx_vm() {
+    print_step "Deploying nginx ingress controller for VM..."
+
+    cd terraform
+
+    # Plan the nginx deployment
+    print_status "Planning nginx deployment..."
+    terraform plan -target=helm_release.nginx_ingress -target=kubectl_manifest.stackai_ingress
+
+    # Apply nginx deployment
+    print_status "Deploying nginx ingress controller..."
+    terraform apply -auto-approve -target=helm_release.nginx_ingress -target=kubectl_manifest.stackai_ingress
+
+    # Wait for nginx to be ready
+    print_status "Waiting for nginx ingress controller to be ready..."
+    kubectl wait --for=condition=available --timeout=300s deployment/nginx-ingress-controller -n stackai-infra
+
+    print_status "Nginx ingress controller deployed ✓"
+
+    cd ..
+}
+
+# Function to verify nginx deployment
+verify_nginx_deployment() {
+    print_step "Verifying nginx deployment..."
+
+    # Check nginx controller pods
+    print_status "Nginx controller status:"
+    kubectl get pods -n stackai-infra -l app.kubernetes.io/name=ingress-nginx
+
+    # Check nginx service
+    print_status "Nginx service status:"
+    kubectl get svc -n stackai-infra -l app.kubernetes.io/name=ingress-nginx
+
+    # Check ingress resources
+    print_status "Ingress resources:"
+    kubectl get ingress -n stackai-infra
+
+    # Check if nginx is ready
+    if kubectl get pods -n stackai-infra -l app.kubernetes.io/name=ingress-nginx --field-selector=status.phase=Running | grep -q nginx-ingress-controller; then
+        print_status "Nginx ingress controller is running ✓"
+    else
+        print_warning "Nginx ingress controller is not running yet"
+    fi
+}
+
+# Function to show nginx access information
+show_nginx_access() {
+    print_step "Nginx Access Information"
+    echo "========================"
+    echo ""
+
+    # Get the external IP of the nginx service
+    local external_ip=$(kubectl get svc -n stackai-infra nginx-ingress-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "pending")
+
+    if [ "$external_ip" = "pending" ] || [ -z "$external_ip" ]; then
+        print_warning "External IP is not ready yet. This may take a few minutes."
+        echo "You can check the status with: kubectl get svc -n stackai-infra nginx-ingress-controller"
+    else
+        print_status "External IP: $external_ip"
+    fi
+
+    local protocol="http"
+    if [ "$ENABLE_SSL" = "true" ]; then
+        protocol="https"
+    fi
+
+    echo ""
+    echo "🌐 Access URLs (once external IP is ready):"
+    echo "=========================================="
+    echo "Main App: $protocol://$DOMAIN"
+    echo "API: $protocol://api.$DOMAIN"
+    echo "Supabase: $protocol://supabase.$DOMAIN"
+    echo "Temporal: $protocol://temporal.$DOMAIN"
+    echo "Unstructured: $protocol://unstructured.$DOMAIN"
+    echo "Repl: $protocol://repl.$DOMAIN"
+    echo "Weaviate: $protocol://weaviate.$DOMAIN"
+    echo "ArgoCD: $protocol://argocd.$DOMAIN"
+    echo "Celery: $protocol://celery.$DOMAIN"
+    echo ""
+    echo "💡 If using Azure Load Balancer, you may need to:"
+    echo "1. Configure DNS records to point to the external IP"
+    echo "2. Wait for the load balancer to be ready (can take 5-10 minutes)"
+    echo "3. Check Azure Load Balancer health probes"
+}
+
+# Main nginx integration function
+integrate_nginx() {
+    print_step "Integrating nginx ingress controller..."
+
+    # Generate ingress configuration
+    generate_vm_ingress
+
+    # Update nginx values
+    update_nginx_values
+
+    # Deploy nginx
+    deploy_nginx_vm
+
+    # Verify deployment
+    verify_nginx_deployment
+
+    # Show access information
+    show_nginx_access
+
+    print_status "Nginx integration completed ✓"
+}
+
 # Function to setup port forwarding
 setup_port_forwarding() {
     print_step "Setting up port forwarding..."
@@ -557,10 +865,30 @@ show_final_info() {
     echo "📋 Access Information:"
     echo "===================="
     echo ""
+
+    # Show nginx access URLs
+    local protocol="http"
+    if [ "$ENABLE_SSL" = "true" ]; then
+        protocol="https"
+    fi
+
+    echo "🌐 Production URLs (via nginx ingress):"
+    echo "====================================="
+    echo "Main App: $protocol://$DOMAIN"
+    echo "API: $protocol://api.$DOMAIN"
+    echo "Supabase: $protocol://supabase.$DOMAIN"
+    echo "Temporal: $protocol://temporal.$DOMAIN"
+    echo "Unstructured: $protocol://unstructured.$DOMAIN"
+    echo "Repl: $protocol://repl.$DOMAIN"
+    echo "Weaviate: $protocol://weaviate.$DOMAIN"
+    echo "ArgoCD: $protocol://argocd.$DOMAIN"
+    echo "Celery: $protocol://celery.$DOMAIN"
+    echo ""
+
     echo "🔧 Get ArgoCD admin password:"
     echo "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
     echo ""
-    echo "🌐 Start port forwarding:"
+    echo "🌐 Start port forwarding (for local development):"
     echo "~/stackai-port-forward.sh"
     echo ""
     echo "📊 Check deployment status:"
@@ -574,15 +902,19 @@ show_final_info() {
     echo "=================="
     echo "  Check pod status: kubectl get pods -A"
     echo "  Check services: kubectl get svc -A"
+    echo "  Check nginx status: kubectl get pods -n stackai-infra -l app.kubernetes.io/name=ingress-nginx"
+    echo "  Check ingress: kubectl get ingress -n stackai-infra"
     echo "  View logs: kubectl logs -l app.kubernetes.io/name=argocd-server -n argocd"
     echo "  Restart services: kubectl rollout restart deployment -n stackai-infra"
     echo ""
     echo "🚀 Next Steps:"
     echo "============="
-    echo "1. Run: ~/stackai-port-forward.sh"
-    echo "2. Access ArgoCD at: http://localhost:8080"
-    echo "3. Get admin password with the command above"
-    echo "4. Configure your applications in ArgoCD"
+    echo "1. Wait for external IP to be assigned (check with: kubectl get svc -n stackai-infra nginx-ingress-controller)"
+    echo "2. Configure DNS records to point to the external IP"
+    echo "3. Access your services via the production URLs above"
+    echo "4. For local development, run: ~/stackai-port-forward.sh"
+    echo "5. Get ArgoCD admin password with the command above"
+    echo "6. Configure your applications in ArgoCD"
 }
 
 # Main function
@@ -591,9 +923,9 @@ main() {
     echo "1. Install required tools (kubectl, Helm, Terraform)"
     echo "2. Install k3s Kubernetes cluster"
     echo "3. Configure k3s for StackAI"
-    echo "4. Verify Nginx Ingress Controller (handled by Terraform)"
-    echo "5. Interactive configuration (domain, SSL, resources, ACR credentials)"
-    echo "6. Deploy StackAI infrastructure using Terraform"
+    echo "4. Interactive configuration (domain, SSL, resources, ACR credentials)"
+    echo "5. Deploy StackAI infrastructure using Terraform"
+    echo "6. Configure nginx ingress controller with proper routing"
     echo "7. Set up port forwarding for local access"
     echo ""
     print_warning "You will be prompted for:"
@@ -618,6 +950,7 @@ main() {
         verify_nginx_ingress
         configure_terraform
         deploy_stackai
+        integrate_nginx
         setup_port_forwarding
         show_final_info
     else
