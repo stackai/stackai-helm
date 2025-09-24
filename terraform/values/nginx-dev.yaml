@@ -123,12 +123,13 @@ controller:
     failureThreshold: 3
     successThreshold: 1
 
-# Default Backend Configuration
+# Default Backend Configuration - Use the built-in default backend
 defaultBackend:
   enabled: true
+  # Use the official ingress-nginx default backend image which has proper health checks
   image:
-    repository: nginx
-    tag: "1.25-alpine"
+    repository: registry.k8s.io/ingress-nginx/nginx
+    tag: "1.0.0"
     pullPolicy: IfNotPresent
 
   # Resources
