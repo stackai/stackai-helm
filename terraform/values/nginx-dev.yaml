@@ -103,7 +103,7 @@ controller:
 
   # Force NGINX to run on control-plane node for Docker Desktop
   nodeSelector:
-    node-role.kubernetes.io/control-plane: ""
+    node-role.kubernetes.io/control-plane: "true"
 
   # Tolerations for control-plane node
   tolerations:
