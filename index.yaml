@@ -594,6 +594,35 @@ entries:
     version: 1.1.3
   stackai-stackweb:
   - apiVersion: v2
+    appVersion: 1.1.6
+    created: "2025-09-24T02:25:30.061502377Z"
+    description: Official StackAI Stackweb Frontend Helm chart.
+    digest: 9677220e4e7ed65fc530f54c24ea8647beb704105cb572facc2dc8661d2e27fb
+    home: https://stackai.com
+    icon: https://stackai.com/favicon.ico
+    keywords:
+    - stackai
+    - stackweb
+    - frontend
+    - web
+    - helm
+    - chart
+    - azure
+    - kubernetes
+    - aks
+    - acr
+    - keyvault
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI
+    name: stackai-stackweb
+    sources:
+    - https://github.com/stackai/stackai-helm
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackai-stackweb-1.1.6/stackai-stackweb-1.1.6.tgz
+    version: 1.1.6
+  - apiVersion: v2
     appVersion: 1.1.5
     created: "2025-09-24T01:22:09.818110959Z"
     description: Official StackAI Stackweb Frontend Helm chart.
@@ -1026,4 +1055,4 @@ entries:
     urls:
     - https://github.com/stackai/stackai-helm/releases/download/stackai-weaviate-1.1.3/stackai-weaviate-1.1.3.tgz
     version: 1.1.3
-generated: "2025-09-24T01:22:10.124747945Z"
+generated: "2025-09-24T02:25:30.061573391Z"
