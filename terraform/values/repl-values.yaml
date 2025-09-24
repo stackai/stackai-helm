@@ -54,27 +54,9 @@ stack-repl:
   # Liveness and Readiness Probes
   livenessProbe:
     enabled: false
-    httpGet:
-      path: /health
-      port: http
-      scheme: HTTP
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
 
   readinessProbe:
     enabled: false
-    httpGet:
-      path: /health
-      port: http
-      scheme: HTTP
-    initialDelaySeconds: 5
-    periodSeconds: 5
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
 
 # Ingress Configuration
 ingress:
