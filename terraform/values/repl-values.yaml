@@ -1,7 +1,7 @@
 stack-repl:
   enabled: true
   image:
-    repository: "stackai.azurecr.io/stackai/stack-repl"
+    repository: "stackai.azurecr.io/stackai/stackrepl/stack-repl"
     tag: "v1.0.0"
     pullPolicy: IfNotPresent
 

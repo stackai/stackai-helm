@@ -12,6 +12,7 @@ This Terraform configuration sets up a complete local development environment fo
 ## Quick Start
 
 1. **Enable Kubernetes in Docker Desktop**
+
    - Open Docker Desktop
    - Go to Settings > Kubernetes
    - Enable Kubernetes
@@ -30,8 +31,7 @@ This Terraform configuration sets up a complete local development environment fo
    >>> acr_password = "password"
 
    >>> Change the ACR credentials to your own and save and exit
-   >>> How to get them? go here Stackai/repository permissions/token
-   >>> click on the token and generate new ones and copy the username and password
+   >>> How to get them? Send an email to [enterprise@stack-ai.com](mailto:enterprise@stack-ai.com?subject=ACR%20Credentials%20Request&body=Hello%20team%2C%0A%0AI%20would%20like%20to%20request%20access%20to%20the%20ACR%20credentials.%0A%0AThank%20you.)
 
    terraform init
    terraform plan
@@ -197,6 +197,15 @@ kubectl logs -l app.kubernetes.io/component=server -n stackai-processing
 kubectl rollout restart deployment -n stackai-infra
 kubectl rollout restart deployment -n stackai-data
 kubectl rollout restart deployment -n stackai-processing
+```
+
+### Check you are in the right context
+
+```bash
+# In local development you expect to be in docker-desktop context
+kubectl config get-contexts
+# Use the right context before run terraform apply
+kubectl config use-context docker-desktop
 ```
 
 ## Cleanup

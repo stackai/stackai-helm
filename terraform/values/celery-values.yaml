@@ -110,7 +110,7 @@ worker:
 
   # Liveness and Readiness Probes
   livenessProbe:
-    enabled: true
+    enabled: false
     exec:
       command:
         - celery
@@ -125,7 +125,7 @@ worker:
     successThreshold: 1
 
   readinessProbe:
-    enabled: true
+    enabled: false
     exec:
       command:
         - celery
