@@ -73,6 +73,14 @@ stackweb:
     runAsNonRoot: true
     fsGroup: 1000
 
+  # Init container to set proper permissions
+  initContainers: []
+
+  # Volume mounts for Next.js build cache and temporary files
+  volumes: []
+
+  volumeMounts: []
+
   # Node Selector
   nodeSelector: {}
 

@@ -2,8 +2,8 @@ apiVersion: v2
 name: stackai-stackweb
 description: Official StackAI Stackweb Frontend Helm chart.
 type: application
-version: 1.1.5
-appVersion: 1.1.5
+version: 1.1.6
+appVersion: 1.1.6
 icon: https://stackai.com/favicon.ico
 keywords:
   - stackai

@@ -89,6 +89,9 @@ stackweb:
     DEBUG: "false"
     ENVIRONMENT: "production"
     LOG_LEVEL: "INFO"
+    # Next.js specific settings
+    NEXT_TELEMETRY_DISABLED: "1"
+    NODE_OPTIONS: "--max-old-space-size=4096"
 
     # External secrets configuration - DISABLED for development
     secrets:
@@ -99,6 +102,10 @@ stackweb:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
 
   # Pod Security Context
   podSecurityContext:
@@ -107,6 +114,41 @@ stackweb:
     runAsGroup: 1000
     runAsNonRoot: true
     fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  # Init container to set proper permissions
+  initContainers:
+    - name: init-permissions
+      image: busybox:1.35
+      command:
+        - sh
+        - -c
+        - |
+          mkdir -p /app/.next /tmp
+          chown -R 1000:1000 /app/.next /tmp
+          chmod -R 755 /app/.next /tmp
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      volumeMounts:
+        - name: nextjs-cache
+          mountPath: /app/.next
+        - name: tmp
+          mountPath: /tmp
+
+  # Volume mounts for Next.js build cache and temporary files
+  volumes:
+    - name: nextjs-cache
+      emptyDir: {}
+    - name: tmp
+      emptyDir: {}
+
+  volumeMounts:
+    - name: nextjs-cache
+      mountPath: /app/.next
+    - name: tmp
+      mountPath: /tmp
 
   # Node Selector
   nodeSelector: {}
