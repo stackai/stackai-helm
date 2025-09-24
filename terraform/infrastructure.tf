@@ -17,7 +17,7 @@ resource "helm_release" "nginx_ingress" {
 resource "kubectl_manifest" "stackai_ingress" {
   depends_on = [helm_release.nginx_ingress]
   # Use the generated ingress configuration if it exists, otherwise use template
-  yaml_body = fileexists("${path.module}/ingress-config.yaml") ? file("${path.module}/ingress-config.yaml") : file("${path.module}/ingress-template.yaml")
+  yaml_body = fileexists("${path.module}/ingress-config.yaml") ? file("${path.module}/ingress-config.yaml") : file("${path.module}/templates/ingress-template.yaml")
 }
 
 # Deploy MongoDB
@@ -149,9 +149,9 @@ resource "helm_release" "stackweb" {
   chart     = "${path.module}/../helm/app/stackweb"
   namespace = kubernetes_namespace.stackai_processing.metadata[0].name
 
-  values = [
-    file("${path.module}/values/stakweb-values.yaml")
-  ]
+  values = [templatefile("${path.module}/values/stakweb-values.yaml", {
+    TIPTAP_PRO_TOKEN_VALUE = var.tiptap_pro_token
+  })]
 
   depends_on = [
     kubernetes_namespace.stackai_processing,

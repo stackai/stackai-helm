@@ -536,115 +536,115 @@ metadata:
     nginx.ingress.kubernetes.io/rate-limit-window: "1m"
 spec:
   rules:
-  # Main application domain
-  - host: $DOMAIN
-    http:
-      paths:
-      # Default route to StackWeb
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: stackweb
-            port:
-              number: 3000
+    # Main application domain
+    - host: $DOMAIN
+      http:
+        paths:
+          # Default route to StackWeb
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: stackweb
+                port:
+                  number: 3000
 
-  # API subdomain
-  - host: api.$DOMAIN
-    http:
-      paths:
-      # Stackend API
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: stackend
-            port:
-              number: 8000
+    # API subdomain
+    - host: api.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: stackend
+                port:
+                  number: 8000
 
-  # Supabase subdomain
-  - host: supabase.$DOMAIN
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: supabase-kong
-            port:
-              number: 8000
+    # Supabase subdomain
+    - host: supabase.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: supabase-kong
+                port:
+                  number: 8000
 
-  # Temporal subdomain
-  - host: temporal.$DOMAIN
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: temporal-web
-            port:
-              number: 8080
+    # Temporal subdomain
+    - host: temporal.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: temporal-web
+                port:
+                  number: 8080
 
-  # Unstructured subdomain
-  - host: unstructured.$DOMAIN
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: unstructured
-            port:
-              number: 8000
+    # Unstructured subdomain
+    - host: unstructured.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unstructured
+                port:
+                  number: 8000
 
-  # Repl subdomain
-  - host: repl.$DOMAIN
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: repl
-            port:
-              number: 8000
+    # Repl subdomain
+    - host: repl.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: repl
+                port:
+                  number: 8000
 
-  # Weaviate subdomain
-  - host: weaviate.$DOMAIN
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: weaviate
-            port:
-              number: 8080
+    # Weaviate subdomain
+    - host: weaviate.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: weaviate
+                port:
+                  number: 8080
 
-  # ArgoCD subdomain
-  - host: argocd.$DOMAIN
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-server
-            port:
-              number: 80
+    # ArgoCD subdomain
+    - host: argocd.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 80
 
-  # Celery subdomain
-  - host: celery.$DOMAIN
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: celery
-            port:
-              number: 8002
+    # Celery subdomain
+    - host: celery.$DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: celery
+                port:
+                  number: 8002
+
 EOF
 
     # Add TLS configuration if SSL is enabled

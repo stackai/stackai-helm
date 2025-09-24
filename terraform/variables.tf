@@ -48,3 +48,9 @@ variable "acr_password" {
   default     = ""
   sensitive   = true
 }
+
+variable "tiptap_pro_token" {
+  description = "Tiptap Pro Token"
+  type        = string
+  default     = ""
+}
