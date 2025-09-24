@@ -38,9 +38,9 @@ resource "kubectl_manifest" "argocd_mongodb" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/infra/mongo"
         chart          = "stackai-mongodb"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/mongodb-dev.yaml"]
         }
@@ -82,9 +82,9 @@ resource "kubectl_manifest" "argocd_redis" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/infra/redis"
         chart          = "stackai-redis"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/redis-dev.yaml"]
         }
@@ -126,9 +126,9 @@ resource "kubectl_manifest" "argocd_postgres" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
-        chart          = "postgres"
-        targetRevision = "1.1.5"
+        repoURL        = "file://${path.module}/../helm/infra/postgres"
+        chart          = "stackai-postgres"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/postgres-dev.yaml"]
         }
@@ -170,9 +170,9 @@ resource "kubectl_manifest" "argocd_weaviate" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/infra/weaviate"
         chart          = "stackai-weaviate"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/weaviate-dev.yaml"]
         }
@@ -214,9 +214,9 @@ resource "kubectl_manifest" "argocd_supabase" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/infra/supabase"
         chart          = "stackai-supabase"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/supabase-dev.yaml"]
         }
@@ -258,9 +258,9 @@ resource "kubectl_manifest" "argocd_nginx" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/infra/nginx"
         chart          = "stackai-nginx-ingress"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/nginx-dev.yaml"]
         }
@@ -303,9 +303,9 @@ resource "kubectl_manifest" "argocd_temporal" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/app/temporal"
         chart          = "stackai-temporal"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/temporal-dev.yaml"]
         }
@@ -347,9 +347,9 @@ resource "kubectl_manifest" "argocd_unstructured" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/app/unstructured"
         chart          = "stackai-unstructured"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
           valueFiles = ["${path.module}/values/unstructured-dev.yaml"]
         }
@@ -394,11 +394,11 @@ resource "kubectl_manifest" "argocd_stackend" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/app/stackend"
         chart          = "stackai-stackend"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
-          valueFiles = ["${path.module}/values/stackend-dev.yaml"]
+          valueFiles = ["${path.module}/values/stakend-values.yaml"]
         }
       }
       destination = {
@@ -441,11 +441,11 @@ resource "kubectl_manifest" "argocd_stackweb" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/app/stackweb"
         chart          = "stackai-stackweb"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
-          valueFiles = ["${path.module}/values/stackweb-dev.yaml"]
+          valueFiles = ["${path.module}/values/stakweb-values.yaml"]
         }
       }
       destination = {
@@ -495,11 +495,11 @@ resource "kubectl_manifest" "argocd_celery" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/app/celery"
         chart          = "stackai-celery"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
-          valueFiles = ["${path.module}/values/celery-dev.yaml"]
+          valueFiles = ["${path.module}/values/celery-values.yaml"]
         }
       }
       destination = {
@@ -542,11 +542,11 @@ resource "kubectl_manifest" "argocd_repl" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://stackai.github.io/stackai-helm"
+        repoURL        = "file://${path.module}/../helm/app/repl"
         chart          = "stackai-repl"
-        targetRevision = "1.1.5"
+        targetRevision = "HEAD"
         helm = {
-          valueFiles = ["${path.module}/values/repl-dev.yaml"]
+          valueFiles = ["${path.module}/values/repl-values.yaml"]
         }
       }
       destination = {

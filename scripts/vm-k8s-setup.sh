@@ -1,0 +1,419 @@
+#!/bin/bash
+
+# StackAI VM Kubernetes Setup Script
+# This script sets up k3s Kubernetes cluster inside an Azure VM and deploys StackAI
+
+set -e
+
+echo "🚀 StackAI VM Kubernetes Setup"
+echo "=============================="
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+print_status() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_step() {
+    echo -e "${BLUE}[STEP]${NC} $1"
+}
+
+# Function to check VM resources
+check_vm_resources() {
+    print_step "Checking VM resources..."
+
+    # Check available memory
+    TOTAL_MEM=$(free -g | awk '/^Mem:/{print $2}')
+    AVAILABLE_MEM=$(free -g | awk '/^Mem:/{print $7}')
+
+    # Check available disk space
+    DISK_USAGE=$(df -h / | awk 'NR==2{print $5}' | sed 's/%//')
+    DISK_AVAILABLE=$(df -h / | awk 'NR==2{print $4}')
+
+    print_status "VM Resource Check:"
+    echo "  Total Memory: ${TOTAL_MEM}GB"
+    echo "  Available Memory: ${AVAILABLE_MEM}GB"
+    echo "  Disk Usage: ${DISK_USAGE}%"
+    echo "  Available Disk: ${DISK_AVAILABLE}"
+    echo ""
+
+    # Warn if resources are low
+    if [ "$TOTAL_MEM" -lt 4 ]; then
+        print_warning "Low memory detected (${TOTAL_MEM}GB). StackAI requires at least 4GB RAM."
+        print_warning "Consider using a larger VM or reducing resource limits."
+    fi
+
+    if [ "$DISK_USAGE" -gt 80 ]; then
+        print_warning "High disk usage detected (${DISK_USAGE}%). Consider freeing up space."
+    fi
+
+    print_status "Resource check completed ✓"
+}
+
+# Function to install required tools
+install_tools() {
+    print_step "Installing required tools..."
+
+    # Update package list
+    sudo apt update
+
+    # Install curl, wget, git
+    sudo apt install -y curl wget git unzip
+
+    # Install kubectl
+    if ! command -v kubectl &> /dev/null; then
+        print_status "Installing kubectl..."
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    fi
+
+    # Install Helm
+    if ! command -v helm &> /dev/null; then
+        print_status "Installing Helm..."
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    fi
+
+    # Install Terraform
+    if ! command -v terraform &> /dev/null; then
+        print_status "Installing Terraform..."
+        wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt update && sudo apt install terraform
+    fi
+
+    print_status "All tools installed ✓"
+}
+
+# Function to install k3s
+install_k3s() {
+    print_step "Installing k3s Kubernetes..."
+
+    # Install k3s
+    curl -sfL https://get.k3s.io | sh -
+
+    # Wait for k3s to be ready
+    print_status "Waiting for k3s to be ready..."
+    sudo systemctl status k3s --no-pager
+
+    # Create kubeconfig for current user
+    mkdir -p ~/.kube
+    sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+    sudo chown $(id -u):$(id -g) ~/.kube/config
+
+    # Test kubectl
+    print_status "Testing kubectl connection..."
+    kubectl get nodes
+
+    print_status "k3s installed and configured ✓"
+}
+
+# Function to configure k3s for StackAI
+configure_k3s() {
+    print_step "Configuring k3s for StackAI..."
+
+    # Enable required features
+    sudo mkdir -p /etc/rancher/k3s
+    sudo tee /etc/rancher/k3s/config.yaml > /dev/null <<EOF
+# k3s configuration for StackAI
+write-kubeconfig-mode: "0644"
+disable:
+  - traefik  # We'll use nginx ingress instead
+  - servicelb
+kube-apiserver-arg:
+  - "enable-admission-plugins=NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook"
+EOF
+
+    # Restart k3s with new configuration
+    sudo systemctl restart k3s
+
+    # Wait for k3s to be ready
+    print_status "Waiting for k3s to restart..."
+    sleep 30
+    kubectl get nodes
+
+    print_status "k3s configured ✓"
+}
+
+# Function to verify nginx ingress controller (handled by Terraform)
+verify_nginx_ingress() {
+    print_step "Verifying Nginx Ingress Controller..."
+
+    print_status "Nginx Ingress Controller will be installed by Terraform configuration ✓"
+    print_status "Your existing nginx configuration includes:"
+    print_status "  - Custom nginx ingress controller"
+    print_status "  - Service routing for all StackAI services"
+    print_status "  - LoadBalancer service type"
+    print_status "  - CORS and security headers"
+    print_status "  - Rate limiting and proxy configuration"
+}
+
+# Function to configure Terraform
+configure_terraform() {
+    print_step "Configuring Terraform..."
+
+    cd terraform
+
+    # Copy terraform vars
+    if [ -f "terraform.tfvars.example" ]; then
+        cp terraform.tfvars.example terraform.tfvars
+    fi
+
+    # Interactive configuration
+    echo ""
+    print_status "Please provide the following configuration details:"
+    echo ""
+
+    # Get domain
+    read -p "Enter your domain (default: localhost): " DOMAIN
+    DOMAIN=${DOMAIN:-localhost}
+
+    # Get SSL preference
+    echo ""
+    read -p "Enable SSL/TLS? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        ENABLE_SSL="true"
+    else
+        ENABLE_SSL="false"
+    fi
+
+    # Get resource limits
+    echo ""
+    print_status "Resource Limits Configuration:"
+    print_warning "These limits apply to each pod. Choose based on your VM size:"
+    echo "  - Small VM (2-4GB RAM): 500m CPU, 512Mi memory"
+    echo "  - Medium VM (4-8GB RAM): 1000m CPU, 1Gi memory"
+    echo "  - Large VM (8GB+ RAM): 2000m CPU, 2Gi memory"
+    echo ""
+    read -p "CPU limit (default: 1000m): " CPU_LIMIT
+    CPU_LIMIT=${CPU_LIMIT:-1000m}
+
+    read -p "Memory limit (default: 2Gi): " MEMORY_LIMIT
+    MEMORY_LIMIT=${MEMORY_LIMIT:-2Gi}
+
+    # Get ArgoCD password
+    echo ""
+    read -p "ArgoCD admin password (default: stackai-dev-argocd-password): " ARGOCD_PASSWORD
+    ARGOCD_PASSWORD=${ARGOCD_PASSWORD:-stackai-dev-argocd-password}
+
+    # Get ACR credentials
+    echo ""
+    print_status "Azure Container Registry (ACR) Configuration:"
+    print_warning "ACR is required for private StackAI images. Leave empty if using public images."
+    echo ""
+    echo "To get ACR credentials, run on your Azure VM:"
+    echo "  az acr credential show --name <your-acr-name> --query 'username' -o tsv"
+    echo "  az acr credential show --name <your-acr-name> --query 'passwords[0].value' -o tsv"
+    echo ""
+    read -p "ACR Username (optional): " ACR_USERNAME
+    if [ -n "$ACR_USERNAME" ]; then
+        read -s -p "ACR Password: " ACR_PASSWORD
+        echo ""
+        print_status "ACR credentials will be configured ✓"
+    else
+        ACR_PASSWORD=""
+        print_warning "ACR credentials not provided - using public images"
+    fi
+
+    # Create terraform.tfvars
+    cat > terraform.tfvars <<EOF
+# VM Kubernetes configuration
+kubeconfig_path = "~/.kube/config"
+domain = "$DOMAIN"
+enable_ssl = $ENABLE_SSL
+resource_limits = {
+  cpu_limit    = "$CPU_LIMIT"
+  memory_limit = "$MEMORY_LIMIT"
+}
+argocd_admin_password = "$ARGOCD_PASSWORD"
+acr_username = "$ACR_USERNAME"
+acr_password = "$ACR_PASSWORD"
+EOF
+
+    print_status "Terraform configured with your settings ✓"
+    echo ""
+    print_status "Configuration Summary:"
+    echo "  Domain: $DOMAIN"
+    echo "  SSL Enabled: $ENABLE_SSL"
+    echo "  CPU Limit: $CPU_LIMIT"
+    echo "  Memory Limit: $MEMORY_LIMIT"
+    echo "  ACR Username: ${ACR_USERNAME:-'Not set'}"
+    echo "  ACR Password: ${ACR_PASSWORD:+'Set'}"
+    echo ""
+
+    # Ask for confirmation before proceeding
+    read -p "Do you want to proceed with these settings? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_status "Configuration cancelled. You can run the script again to reconfigure."
+        exit 0
+    fi
+}
+
+# Function to deploy StackAI
+deploy_stackai() {
+    print_step "Deploying StackAI infrastructure..."
+
+    # Initialize Terraform
+    terraform init
+
+    # Plan deployment
+    print_status "Planning deployment..."
+    terraform plan -out=tfplan
+
+    # Ask for confirmation
+    echo ""
+    print_warning "This will deploy StackAI infrastructure to your k3s cluster."
+    read -p "Do you want to continue? (y/N): " -n 1 -r
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Apply deployment
+        print_status "Applying deployment..."
+        terraform apply tfplan
+
+        print_status "StackAI infrastructure deployed ✓"
+    else
+        print_status "Deployment cancelled."
+        exit 0
+    fi
+}
+
+# Function to setup port forwarding
+setup_port_forwarding() {
+    print_step "Setting up port forwarding..."
+
+    # Create port forwarding script
+    cat > ~/stackai-port-forward.sh <<'EOF'
+#!/bin/bash
+
+echo "Starting StackAI port forwarding..."
+echo "=================================="
+
+# Function to start port forwarding in background
+start_port_forward() {
+    local service=$1
+    local namespace=$2
+    local local_port=$3
+    local service_port=$4
+
+    echo "Starting port forward for $service on port $local_port..."
+    kubectl port-forward -n $namespace svc/$service $local_port:$service_port &
+}
+
+# Start port forwarding for all services
+start_port_forward "argocd-server" "argocd" 8080 80
+start_port_forward "supabase-kong" "stackai-infra" 8000 8000
+start_port_forward "temporal-web" "stackai-processing" 8081 8080
+start_port_forward "weaviate" "stackai-data" 8082 8080
+start_port_forward "mongodb" "stackai-data" 27017 27017
+start_port_forward "redis" "stackai-data" 6379 6379
+start_port_forward "postgres" "stackai-data" 5432 5432
+
+echo ""
+echo "Port forwarding started!"
+echo "======================="
+echo "ArgoCD:        http://localhost:8080"
+echo "Supabase:      http://localhost:8000"
+echo "Temporal:      http://localhost:8081"
+echo "Weaviate:      http://localhost:8082"
+echo "MongoDB:       localhost:27017"
+echo "Redis:         localhost:6379"
+echo "PostgreSQL:    localhost:5432"
+echo ""
+echo "To stop port forwarding, run: pkill -f 'kubectl port-forward'"
+EOF
+
+    chmod +x ~/stackai-port-forward.sh
+
+    print_status "Port forwarding script created at ~/stackai-port-forward.sh ✓"
+}
+
+# Function to show final information
+show_final_info() {
+    print_status "StackAI deployment completed! 🎉"
+    echo ""
+    echo "📋 Access Information:"
+    echo "===================="
+    echo ""
+    echo "🔧 Get ArgoCD admin password:"
+    echo "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
+    echo ""
+    echo "🌐 Start port forwarding:"
+    echo "~/stackai-port-forward.sh"
+    echo ""
+    echo "📊 Check deployment status:"
+    echo "kubectl get pods -A"
+    echo "kubectl get svc -A"
+    echo ""
+    echo "🔍 View ArgoCD applications:"
+    echo "kubectl get applications -n argocd"
+    echo ""
+    echo "📝 Useful Commands:"
+    echo "=================="
+    echo "  Check pod status: kubectl get pods -A"
+    echo "  Check services: kubectl get svc -A"
+    echo "  View logs: kubectl logs -l app.kubernetes.io/name=argocd-server -n argocd"
+    echo "  Restart services: kubectl rollout restart deployment -n stackai-infra"
+    echo ""
+    echo "🚀 Next Steps:"
+    echo "============="
+    echo "1. Run: ~/stackai-port-forward.sh"
+    echo "2. Access ArgoCD at: http://localhost:8080"
+    echo "3. Get admin password with the command above"
+    echo "4. Configure your applications in ArgoCD"
+}
+
+# Main function
+main() {
+    echo "This script will:"
+    echo "1. Install required tools (kubectl, Helm, Terraform)"
+    echo "2. Install k3s Kubernetes cluster"
+    echo "3. Configure k3s for StackAI"
+    echo "4. Verify Nginx Ingress Controller (handled by Terraform)"
+    echo "5. Interactive configuration (domain, SSL, resources, ACR credentials)"
+    echo "6. Deploy StackAI infrastructure using Terraform"
+    echo "7. Set up port forwarding for local access"
+    echo ""
+    print_warning "You will be prompted for:"
+    echo "  - Domain name (default: localhost)"
+    echo "  - SSL/TLS preference"
+    echo "  - CPU and memory limits"
+    echo "  - ArgoCD admin password"
+    echo "  - Azure Container Registry credentials (optional)"
+    echo ""
+
+    read -p "Do you want to continue? (y/N): " -n 1 -r
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        check_vm_resources
+        install_tools
+        install_k3s
+        configure_k3s
+        verify_nginx_ingress
+        configure_terraform
+        deploy_stackai
+        setup_port_forwarding
+        show_final_info
+    else
+        print_status "Setup cancelled."
+        exit 0
+    fi
+}
+
+# Run main function
+main "$@"
