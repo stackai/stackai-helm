@@ -89,12 +89,20 @@ stackweb:
     DEBUG: "false"
     ENVIRONMENT: "production"
     LOG_LEVEL: "INFO"
-    # Next.js specific settings
+    # Next.js specific settings - UPDATED to fix permission issues
     NEXT_TELEMETRY_DISABLED: "1"
     NODE_OPTIONS: "--max-old-space-size=4096"
 
-    # Use tmp directory for Next.js build cache
+    # Fix Next.js file permission issues by redirecting all temp files to /tmp
     NEXT_BUILD_CACHE_DIR: "/tmp/.next"
+    TMPDIR: "/tmp"
+    XDG_CACHE_HOME: "/tmp/.cache"
+
+    # Disable Next.js trace collection to avoid permission issues
+    NEXT_TRACE_UPLOAD_DISABLED: "1"
+
+    # Set working directory to a writable location
+    PWD: "/tmp"
 
     # External secrets configuration - DISABLED for development
     secrets:
@@ -129,12 +137,16 @@ stackweb:
       emptyDir: {}
     - name: tmp
       emptyDir: {}
+    - name: cache
+      emptyDir: {}
 
   volumeMounts:
     - name: nextjs-cache
       mountPath: /tmp/.next
     - name: tmp
       mountPath: /tmp
+    - name: cache
+      mountPath: /tmp/.cache
 
   # Node Selector
   nodeSelector: {}
