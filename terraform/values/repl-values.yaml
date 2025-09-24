@@ -18,6 +18,11 @@ repl:
     ports:
       http: 8000
 
+  env:
+    # External secrets configuration - DISABLED for development
+    secrets:
+      useExternalSecrets: false
+
   # Resources - Increased for macOS local development
   resources:
     requests:
