@@ -24,19 +24,19 @@ stackweb:
       memory: 1Gi
       cpu: 200m
     limits:
-      memory: 2Gi
-      cpu: 1000m
+      memory: 4Gi
+      cpu: 2000m
 
   # Environment Configuration
   env:
     # Next.js Public Variables
-    NEXT_PUBLIC_SUPABASE_URL: "http://supabase.localhost"
-    NEXT_PUBLIC_URL: "http://stackweb.localhost"
-    NEXT_PUBLIC_SITE_URL: "http://stackweb.localhost"
-    NEXT_PUBLIC_INDEX_URL: "http://stackend.localhost/"
-    NEXT_PUBLIC_CHAT_BACKEND_URL: "http://stackend.localhost/"
-    NEXT_PUBLIC_STACKEND_URL: "http://stackend.localhost/"
-    NEXT_PUBLIC_STACKEND_INFERENCE_URL: "http://stackend.localhost/"
+    NEXT_PUBLIC_SUPABASE_URL: "http://supabase.yasser.eastus.cloudapp.azure.com"
+    NEXT_PUBLIC_URL: "http://yasser.eastus.cloudapp.azure.com"
+    NEXT_PUBLIC_SITE_URL: "http://yasser.eastus.cloudapp.azure.com"
+    NEXT_PUBLIC_INDEX_URL: "http://api.yasser.eastus.cloudapp.azure.com/"
+    NEXT_PUBLIC_CHAT_BACKEND_URL: "http://api.yasser.eastus.cloudapp.azure.com/"
+    NEXT_PUBLIC_STACKEND_URL: "http://api.yasser.eastus.cloudapp.azure.com/"
+    NEXT_PUBLIC_STACKEND_INFERENCE_URL: "http://api.yasser.eastus.cloudapp.azure.com/"
 
     # Supabase Keys
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
@@ -82,8 +82,8 @@ stackweb:
     GOOGLE_CLIENT_EMAIL: "mail@example.io"
     GOOGLE_SERVICE_PRIVATE_KEY: "[your-google-service-private-key]"
     FONTAWESOME_PACKAGE_TOKEN: "[your-fontawesome-package-token]"
-    TIPTAP_PRO_TOKEN: "[your-tiptap-pro-token]"
-    NPM_RC: "[your-npm-rc]"
+    TIPTAP_PRO_TOKEN: ""
+    NPM_RC: "registry=https://registry.npmjs.org"
 
     # Application settings
     DEBUG: "false"
@@ -191,14 +191,14 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: stackweb.localhost
+    - host: yasser.eastus.cloudapp.azure.com
       paths:
         - path: /
           pathType: Prefix
   tls:
     - secretName: stackweb-tls
       hosts:
-        - stackweb.localhost
+        - yasser.eastus.cloudapp.azure.com
 
 # External Secrets Configuration - DISABLED for development
 externalSecrets:

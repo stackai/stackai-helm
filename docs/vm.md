@@ -27,7 +27,7 @@ sudo apt install -y curl wget git unzip
 
 ```bash
 # Clone the repository
-git clone https://github.com/stack-ai/stackai-helm.git
+git clone https://github.com/stackai/stackai-helm.git
 cd stackai-helm
 
 # Run the automated setup script

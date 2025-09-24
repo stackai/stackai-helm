@@ -160,6 +160,188 @@ verify_nginx_ingress() {
     print_status "  - Rate limiting and proxy configuration"
 }
 
+# Function to backup original values files
+backup_values_files() {
+    print_step "Creating backup of original values files..."
+
+    # Create backup directory
+    mkdir -p values/backup
+
+    # Backup all values files
+    for file in values/*.yaml; do
+        if [ -f "$file" ] && [[ "$file" != *"backup"* ]]; then
+            cp "$file" "values/backup/$(basename "$file").backup"
+        fi
+    done
+
+    print_status "Values files backed up to values/backup/ ✓"
+}
+
+# Function to update all values files with the new domain
+update_values_files() {
+    local domain="$1"
+    print_step "Updating values files with domain: $domain"
+
+    # Create backup first
+    backup_values_files
+
+    # Create subdomains
+    local api_domain="api.$domain"
+    local supabase_domain="supabase.$domain"
+    local temporal_domain="temporal.$domain"
+    local unstructured_domain="unstructured.$domain"
+    local repl_domain="repl.$domain"
+    local weaviate_domain="weaviate.$domain"
+    local argocd_domain="argocd.$domain"
+    local celery_domain="celery.$domain"
+
+    print_status "Updating domain configurations..."
+
+    # Generic function to update any domain pattern in a file
+    update_domain_patterns() {
+        local file="$1"
+        local new_domain="$2"
+
+        if [ -f "$file" ]; then
+            # Replace any existing domain patterns with new domain
+            # This handles: localhost, any existing domain, IP addresses, etc.
+
+            # Replace http://localhost or http://any-domain (but preserve paths)
+            sed -i "s|http://[^/[:space:]]*|http://$new_domain|g" "$file"
+            # Replace https://localhost or https://any-domain (but preserve paths)
+            sed -i "s|https://[^/[:space:]]*|https://$new_domain|g" "$file"
+            # Replace host: localhost or host: any-domain
+            sed -i "s|host: [^[:space:]]*|host: $new_domain|g" "$file"
+            # Replace any URL patterns in environment variables (but preserve paths)
+            sed -i "s|http://[^/[:space:]]*|http://$new_domain|g" "$file"
+
+            return 0
+        fi
+        return 1
+    }
+
+    # Function to update specific service subdomains
+    update_service_subdomains() {
+        local file="$1"
+        local service="$2"
+        local base_domain="$3"
+        local subdomain="$service.$base_domain"
+
+        if [ -f "$file" ]; then
+            # Update specific service URLs to use subdomain
+            sed -i "s|http://$service\.[^[:space:]]*|http://$subdomain|g" "$file"
+            sed -i "s|https://$service\.[^[:space:]]*|https://$subdomain|g" "$file"
+            sed -i "s|host: $service\.[^[:space:]]*|host: $subdomain|g" "$file"
+
+            # Also handle cases where service might be referenced without protocol
+            sed -i "s|$service\.[^[:space:]]*|$subdomain|g" "$file"
+
+            return 0
+        fi
+        return 1
+    }
+
+    # Update all values files with generic domain replacement
+    print_status "Updating all values files with domain: $domain"
+
+    # List of all values files to update
+    local values_files=(
+        "values/argocd-values.yaml:$argocd_domain"
+        "values/stakweb-values.yaml:$domain"
+        "values/stakend-values.yaml:$domain"
+        "values/celery-values.yaml:$domain"
+        "values/repl-values.yaml:$repl_domain"
+        "values/supabase-dev.yaml:$supabase_domain"
+        "values/temporal-dev.yaml:$temporal_domain"
+        "values/unstructured-dev.yaml:$unstructured_domain"
+    )
+
+    # Update each values file
+    for file_config in "${values_files[@]}"; do
+        IFS=':' read -r file target_domain <<< "$file_config"
+
+        if [ -f "$file" ]; then
+            # Update base domain patterns
+            update_domain_patterns "$file" "$target_domain"
+
+            # Update specific subdomains for files that need them
+            case "$file" in
+                "values/stakweb-values.yaml")
+                    update_service_subdomains "$file" "api" "$domain"
+                    update_service_subdomains "$file" "supabase" "$domain"
+                    ;;
+                "values/stakend-values.yaml")
+                    update_service_subdomains "$file" "api" "$domain"
+                    update_service_subdomains "$file" "supabase" "$domain"
+                    update_service_subdomains "$file" "weaviate" "$domain"
+                    update_service_subdomains "$file" "unstructured" "$domain"
+                    update_service_subdomains "$file" "repl" "$domain"
+                    ;;
+                "values/celery-values.yaml")
+                    update_service_subdomains "$file" "api" "$domain"
+                    update_service_subdomains "$file" "supabase" "$domain"
+                    update_service_subdomains "$file" "weaviate" "$domain"
+                    update_service_subdomains "$file" "unstructured" "$domain"
+                    update_service_subdomains "$file" "repl" "$domain"
+                    ;;
+            esac
+
+            print_status "Updated $(basename "$file") ✓"
+        fi
+    done
+
+    print_status "All values files updated with domain: $domain ✓"
+    echo ""
+    print_status "Service URLs will be:"
+    echo "  Main App: http://$domain"
+    echo "  API: http://$api_domain"
+    echo "  Supabase: http://$supabase_domain"
+    echo "  Temporal: http://$temporal_domain"
+    echo "  Unstructured: http://$unstructured_domain"
+    echo "  Repl: http://$repl_domain"
+    echo "  Weaviate: http://$weaviate_domain"
+    echo "  ArgoCD: http://$argocd_domain"
+    echo "  Celery: http://$celery_domain"
+}
+
+# Function to restore original values files
+restore_values_files() {
+    print_step "Restoring original values files..."
+
+    if [ -d "values/backup" ]; then
+        for backup_file in values/backup/*.backup; do
+            if [ -f "$backup_file" ]; then
+                original_name=$(basename "$backup_file" .backup)
+                cp "$backup_file" "values/$original_name"
+                print_status "Restored $original_name ✓"
+            fi
+        done
+        print_status "All values files restored from backup ✓"
+    else
+        print_warning "No backup found. Original values files not restored."
+    fi
+}
+
+# Function to update Tiptap Pro Token in StackWeb values
+update_tiptap_token() {
+    local token="$1"
+
+    if [ -n "$token" ] && [ -f "values/stakweb-values.yaml" ]; then
+        print_step "Updating Tiptap Pro Token in StackWeb values..."
+
+        # Update TIPTAP_PRO_TOKEN
+        sed -i "s|TIPTAP_PRO_TOKEN: \".*\"|TIPTAP_PRO_TOKEN: \"$token\"|g" values/stakweb-values.yaml
+
+        # Update NPM_RC with the new token
+        local npm_rc="registry=https://registry.npmjs.org\\n@tiptap-pro:registry=https://registry.tiptap.dev/\\n//registry.tiptap.dev/:_authToken=\${TIPTAP_PRO_TOKEN}"
+        sed -i "s|NPM_RC: \".*\"|NPM_RC: \"$npm_rc\"|g" values/stakweb-values.yaml
+
+        print_status "Tiptap Pro Token updated in stakweb-values.yaml ✓"
+    elif [ -z "$token" ] && [ -f "values/stakweb-values.yaml" ]; then
+        print_status "Tiptap Pro Token not provided - using free version ✓"
+    fi
+}
+
 # Function to configure Terraform
 configure_terraform() {
     print_step "Configuring Terraform..."
@@ -177,8 +359,8 @@ configure_terraform() {
     echo ""
 
     # Get domain
-    read -p "Enter your domain (default: localhost): " DOMAIN
-    DOMAIN=${DOMAIN:-localhost}
+        read -p "Enter your domain (default: yasser.eastus.cloudapp.azure.com): " DOMAIN
+        DOMAIN=${DOMAIN:-yasser.eastus.cloudapp.azure.com}
 
     # Get SSL preference
     echo ""
@@ -228,6 +410,24 @@ configure_terraform() {
         print_warning "ACR credentials not provided - using public images"
     fi
 
+    # Get Tiptap Pro credentials
+    echo ""
+    print_status "Tiptap Pro Configuration:"
+    print_warning "Tiptap Pro is required for advanced editor features. Leave empty if using free version."
+    echo ""
+    echo "To get Tiptap Pro credentials:"
+    echo "  1. Visit: https://tiptap.dev/pro"
+    echo "  2. Sign up for Tiptap Pro"
+    echo "  3. Get your Pro Token from the dashboard"
+    echo ""
+    read -p "Tiptap Pro Token (optional): " TIPTAP_PRO_TOKEN
+    if [ -n "$TIPTAP_PRO_TOKEN" ]; then
+        print_status "Tiptap Pro Token will be configured ✓"
+    else
+        TIPTAP_PRO_TOKEN=""
+        print_warning "Tiptap Pro Token not provided - using free version"
+    fi
+
     # Create terraform.tfvars
     cat > terraform.tfvars <<EOF
 # VM Kubernetes configuration
@@ -241,7 +441,14 @@ resource_limits = {
 argocd_admin_password = "$ARGOCD_PASSWORD"
 acr_username = "$ACR_USERNAME"
 acr_password = "$ACR_PASSWORD"
+tiptap_pro_token = "$TIPTAP_PRO_TOKEN"
 EOF
+
+    # Update all values files with the new domain
+    update_values_files "$DOMAIN"
+
+    # Update Tiptap Pro Token in StackWeb values
+    update_tiptap_token "$TIPTAP_PRO_TOKEN"
 
     print_status "Terraform configured with your settings ✓"
     echo ""
@@ -252,6 +459,7 @@ EOF
     echo "  Memory Limit: $MEMORY_LIMIT"
     echo "  ACR Username: ${ACR_USERNAME:-'Not set'}"
     echo "  ACR Password: ${ACR_PASSWORD:+'Set'}"
+    echo "  Tiptap Pro Token: ${TIPTAP_PRO_TOKEN:+'Set'}"
     echo ""
 
     # Ask for confirmation before proceeding
@@ -389,11 +597,14 @@ main() {
     echo "7. Set up port forwarding for local access"
     echo ""
     print_warning "You will be prompted for:"
-    echo "  - Domain name (default: localhost)"
+    echo "  - Domain name (default: yasser.eastus.cloudapp.azure.com)"
     echo "  - SSL/TLS preference"
     echo "  - CPU and memory limits"
     echo "  - ArgoCD admin password"
     echo "  - Azure Container Registry credentials (optional)"
+    echo "  - Tiptap Pro Token (optional)"
+    echo ""
+    print_status "The script will automatically update all values files with your domain!"
     echo ""
 
     read -p "Do you want to continue? (y/N): " -n 1 -r
