@@ -2,7 +2,7 @@ worker:
   enabled: true
   image:
     repository: "stackai.azurecr.io/stackai/stackend-celery-worker"
-    tag: "v1.0.0"
+    tag: "v1.0.1"
     pullPolicy: IfNotPresent
 
   # Celery application module name
