@@ -1,0 +1,17 @@
+apiVersion: v2
+name: stackrepl
+description: A Helm chart for StackAI REPL Service
+type: application
+version: 2.0.0
+appVersion: "v1.0.0"
+keywords:
+  - stackai
+  - repl
+  - interactive
+  - development
+home: https://stackai.com
+sources:
+  - https://github.com/stackai/stackai
+maintainers:
+  - name: StackAI Team
+    email: support@stackai.com

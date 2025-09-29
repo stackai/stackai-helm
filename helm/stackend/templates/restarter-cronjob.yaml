@@ -1,0 +1,44 @@
+{{- if .Values.restarter.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "stackend.fullname" . }}-restarter
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: restarter
+spec:
+  schedule: {{ .Values.restarter.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "stackend.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: restarter
+        spec:
+          serviceAccountName: {{ include "stackend.serviceAccountName" . }}
+          containers:
+          - name: restarter
+            image: "{{ .Values.restarter.image.repository }}:{{ .Values.restarter.image.tag }}"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              while true; do
+                if [ "$(date +'%H:%M')" = '07:00' ]; then
+                  echo "Restarting services..."
+                  kubectl rollout restart deployment/{{ include "stackend.fullname" . }}
+                  kubectl rollout restart deployment/{{ include "stackend.fullname" . }}-celery
+                fi
+                sleep 30
+                echo "Restarting stackend at $(date)"
+              done
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                cpu: 50m
+                memory: 64Mi
+          restartPolicy: OnFailure
+{{- end }}

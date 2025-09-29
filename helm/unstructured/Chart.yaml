@@ -1,0 +1,17 @@
+apiVersion: v2
+name: unstructured
+description: A Helm chart for Unstructured API Service
+type: application
+version: 2.0.0
+appVersion: "0.0.80"
+keywords:
+  - unstructured
+  - api
+  - document-processing
+  - ai
+home: https://unstructured.io
+sources:
+  - https://github.com/Unstructured-IO/unstructured
+maintainers:
+  - name: Unstructured Team
+    email: support@unstructured.io

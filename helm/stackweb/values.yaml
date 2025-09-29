@@ -1,0 +1,155 @@
+# Default values for stackweb
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: stackai.azurecr.io/stackai/stackweb
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v1.0.1"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: stackweb.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: stackweb-tls
+  #    hosts:
+  #      - stackweb.local
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Environment variables
+env:
+  # Add your environment variables here
+  # Example:
+  # NEXT_PUBLIC_SITE_URL: "https://your-domain.com"
+  # NEXT_PUBLIC_STACKEND_URL: "http://stackend:8000"
+  # NEXT_PUBLIC_STACKEND_INFERENCE_URL: "http://stackend:8888"
+  # NEXT_PUBLIC_SUPABASE_URL: "http://supabase:8000"
+  # NEXT_PUBLIC_SUPABASE_ANON_KEY: "your-anon-key"
+  # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "your-stripe-key"
+  # NEXT_PUBLIC_POSTHOG_API_KEY: "your-posthog-key"
+  # NEXT_PUBLIC_POSTHOG_HOST: "https://app.posthog.com"
+  # NEXT_PUBLIC_SENTRY_DSN: "your-sentry-dsn"
+  # NEXT_PUBLIC_GOOGLE_CLIENT_ID: "your-google-client-id"
+  # NEXT_PUBLIC_NOTION_CLIENT_ID: "your-notion-client-id"
+  # NEXT_PUBLIC_DROPBOX_CLIENT_ID: "your-dropbox-client-id"
+  # NEXT_PUBLIC_CONFLUENCE_CLIENT_ID: "your-confluence-client-id"
+  # NEXT_PUBLIC_SHAREPOINT_CLIENT_ID: "your-sharepoint-client-id"
+  # NEXT_PUBLIC_OUTLOOK_CLIENT_ID: "your-outlook-client-id"
+  # NEXT_PUBLIC_HUBSPOT_CLIENT_ID: "your-hubspot-client-id"
+  # NEXT_PUBLIC_ZENDESK_CLIENT_ID: "your-zendesk-client-id"
+  # NEXT_PUBLIC_TYPEFORM_CLIENT_ID: "your-typeform-client-id"
+  # NEXT_PUBLIC_AIRTABLE_CLIENT_ID: "your-airtable-client-id"
+  # NEXT_PUBLIC_CHAMALEON_KEY: "your-chamaleon-key"
+  # NEXT_PUBLIC_LEADERBOARD_API_URL: "your-leaderboard-api-url"
+  # NEXT_PUBLIC_INDEX_URL: "your-index-url"
+  # NEXT_PUBLIC_CHAT_BACKEND_URL: "your-chat-backend-url"
+  # NEXT_PUBLIC_VERCEL_ENV: "production"
+  # NEXT_PUBLIC_REACT_APP_ENV: "production"
+  # NEXT_PUBLIC_URL: "https://your-domain.com"
+  # NODE_TLS_REJECT_UNAUTHORIZED: "0"
+  # REACT_APP_ENV: "production"
+  # VERCEL_ENV: "production"
+  # ON_PREMISE: "true"
+  # RESEND_API_KEY: "your-resend-api-key"
+  # SHEET_ID: "your-sheet-id"
+  # SPREADSHEET_ID: "your-spreadsheet-id"
+  # SLACK_CUSTOMER_SUPPORT_WEBHOOK: "your-slack-webhook"
+  # SLACK_SELF_HOSTED_WEBHOOK: "your-slack-webhook"
+  # STRIPE_SECRET_KEY: "your-stripe-secret-key"
+  # STRIPE_WEBHOOK_SECRET: "your-stripe-webhook-secret"
+  # SUPABASE_SERVICE_ROLE_KEY: "your-supabase-service-role-key"
+  # FONTAWESOME_PACKAGE_TOKEN: "your-fontawesome-token"
+  # NPM_RC: "your-npm-rc"
+  # TIPTAP_PRO_TOKEN: "your-tiptap-pro-token"
+  # GOOGLE_CLIENT_EMAIL: "your-google-client-email"
+  # GOOGLE_SERVICE_PRIVATE_KEY: "your-google-service-private-key"
+  # NEXT_PUBLIC_AIRTABLE_CODE_VERIFIER: "your-airtable-code-verifier"
+  # NEXT_PUBLIC_NOTION_OAUTH_CLIENT_ID: "your-notion-oauth-client-id"
+
+# Health checks
+healthCheck:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# Liveness probe
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# Readiness probe
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1

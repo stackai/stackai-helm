@@ -1,6 +1,6 @@
 # StackAI Helm Charts
 
-Official Helm charts for StackAI - the complete AI development platform. Deploy StackAI infrastructure and applications on Kubernetes with ease.
+Official Helm charts for StackAI - the complete AI development platform.
 
 ## 🚀 Quick Start
 
@@ -11,48 +11,23 @@ helm repo add stackai https://stackai.github.io/stackai-helm/
 helm repo update
 ```
 
-### Install Infrastructure
-
-```bash
-# MongoDB database
-helm install mongodb stackai/stackai-mongodb
-
-# Redis cache
-helm install redis stackai/stackai-redis
-
-# Weaviate vector database
-helm install weaviate stackai/stackai-weaviate
-
-# Supabase backend
-helm install supabase stackai/stackai-supabase
-
-# Nginx Ingress Controller
-helm install nginx stackai/stackai-nginx-ingress
-
-# PostgreSQL database
-helm install postgres stackai/postgres
-```
-
 ### Install Applications
 
 ```bash
 # StackAI Backend API
-helm install stackend stackai/stackai-stackend
+helm install stackend stackai/stackend
 
 # StackAI Frontend
-helm install stackweb stackai/stackai-stackweb
-
-# Background Tasks
-helm install celery stackai/stackai-celery
+helm install stackweb stackai/stackweb
 
 # Repl API
-helm install repl stackai/stackai-repl
+helm install repl stackai/stackrepl
 
-# Temporal Workflow Engine
-helm install temporal stackai/stackai-temporal
+# Supabase
+helm install supabase stackai/supabase
 
-# Unstructured API
-helm install unstructured stackai/stackai-unstructured
+# Unstructured
+helm install unstructured stackai/unstructured
 ```
 
 ## 🛠️ Configuration
@@ -62,31 +37,17 @@ helm install unstructured stackai/stackai-unstructured
 Each chart supports extensive customization through values files:
 
 ```bash
-# Install with custom values
-helm install mongodb stackai/stackai-mongodb -f my-values.yaml
-
-# Override specific values
-helm install redis stackai/stackai-redis \
-  --set persistence.enabled=true \
-  --set resources.requests.memory=512Mi
-```
-
-### Environment-Specific Deployments
-
-```bash
-# Development environment
-helm install stackend stackai/stackai-stackend \
-  -f examples/values/dev/stackend-local.yaml
-
-# Production environment
-helm install stackend stackai/stackai-stackend \
-  -f examples/values/prod/stackend-production.yaml
+helm install stackend stackai/stackend \
+  -f examples/values/stackend.yaml
 ```
 
 ## 📚 Documentation
 
-- [Chart Documentation](helm/README.md) - Detailed chart documentation
-- [Release Process](scripts/release/README.md) - Chart release process
+[Stackend Documentation](https://stackai.github.io/stackai-helm/helm/stackend)
+[Stackweb Documentation](https://stackai.github.io/stackai-helm/helm/stackweb)
+[Stackrepl Documentation](https://stackai.github.io/stackai-helm/helm/stackrepl)
+[Supabase Documentation](https://stackai.github.io/stackai-helm/helm/supabase)
+[Unstructured Documentation](https://stackai.github.io/stackai-helm/helm/unstructured)
 
 ## 🌟 Features
 

@@ -1,0 +1,18 @@
+apiVersion: v2
+name: stackend
+description: A Helm chart for StackAI Backend Services
+type: application
+version: 2.0.0
+appVersion: "v1.0.1"
+keywords:
+  - stackai
+  - backend
+  - api
+  - celery
+  - redis
+home: https://stackai.com
+sources:
+  - https://github.com/stackai/stackai
+maintainers:
+  - name: StackAI Team
+    email: support@stackai.com
