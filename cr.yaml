@@ -13,10 +13,10 @@ charts-repo: https://stackai.github.io/stackai-helm
 
 # Chart name patterns (optional)
 # If not specified, directory names will be used as chart names
-chart-name-pattern: "stackai-{{ .Name }}"
+chart-name-pattern: "{{ .Name }}"
 
 # Release name pattern
-release-name-pattern: "stackai-{{ .Name }}"
+release-name-pattern: "{{ .Name }}"
 
 # Chart versioning strategy
 version-strategy: "semantic"
@@ -25,7 +25,7 @@ version-strategy: "semantic"
 generate-changelog: true
 
 # Commit message template
-commit-message-template: "chore: release {{ .Name }} {{ .Version }}"
+commit-message-template: ":sparkles: chore: release {{ .Name }} {{ .Version }}"
 
 # Tag template
 tag-template: "{{ .Name }}-{{ .Version }}"
