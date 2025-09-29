@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stackend.fullname" . }}-celery
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: celery
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "stackend.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: celery
+  template:
+    metadata:
+      labels:
+        {{- include "stackend.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: celery
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "stackend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: celery-worker
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.celeryImage.repository }}:{{ .Values.celeryImage.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.celeryImage.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.celeryResources | nindent 12 }}
+          volumeMounts:
+            - name: llm-config
+              mountPath: /app/src/apps/config/llm_config.toml
+              subPath: llm_config.toml
+            - name: embeddings-config
+              mountPath: /app/src/apps/config/embeddings_config.toml
+              subPath: embeddings_config.toml
+            - name: llm-local-config
+              mountPath: /app/src/apps/config/llm_models_by_providers/llm_local_config.toml
+              subPath: llm_local_config.toml
+            - name: llm-bedrock-config
+              mountPath: /app/src/apps/config/llm_models_by_providers/llm_bedrock_config.toml
+              subPath: llm_bedrock_config.toml
+            - name: llm-azure-config
+              mountPath: /app/src/apps/config/llm_models_by_providers/llm_azure_config.toml
+              subPath: llm_azure_config.toml
+            - name: llm-openai-config
+              mountPath: /app/src/apps/config/llm_models_by_providers/llm_openai_config.toml
+              subPath: llm_openai_config.toml
+      volumes:
+        - name: llm-config
+          configMap:
+            name: {{ include "stackend.fullname" . }}-llm-config
+        - name: embeddings-config
+          configMap:
+            name: {{ include "stackend.fullname" . }}-embeddings-config
+        - name: llm-local-config
+          configMap:
+            name: {{ include "stackend.fullname" . }}-llm-local-config
+        - name: llm-bedrock-config
+          configMap:
+            name: {{ include "stackend.fullname" . }}-llm-bedrock-config
+        - name: llm-azure-config
+          configMap:
+            name: {{ include "stackend.fullname" . }}-llm-azure-config
+        - name: llm-openai-config
+          configMap:
+            name: {{ include "stackend.fullname" . }}-llm-openai-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-llm-config
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  llm_config.toml: |
+{{ .Values.configMaps.llmConfig | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-embeddings-config
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  embeddings_config.toml: |
+{{ .Values.configMaps.embeddingsConfig | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-llm-local-config
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  llm_local_config.toml: |
+{{ .Values.configMaps.llmLocalConfig | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-llm-bedrock-config
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  llm_bedrock_config.toml: |
+{{ .Values.configMaps.llmBedrockConfig | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-llm-azure-config
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  llm_azure_config.toml: |
+{{ .Values.configMaps.llmAzureConfig | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-llm-openai-config
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  llm_openai_config.toml: |
+{{ .Values.configMaps.llmOpenaiConfig | indent 4 }}
