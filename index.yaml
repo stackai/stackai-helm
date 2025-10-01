@@ -3,6 +3,28 @@ entries:
   stackend:
   - apiVersion: v2
     appVersion: v1.0.1
+    created: "2025-10-01T05:31:44.129798028Z"
+    description: A Helm chart for StackAI Backend Services
+    digest: 22b6f0be7df90c68023a2e75e615cb4064394edf1c148d6a72d3310083625882
+    home: https://stackai.com
+    keywords:
+    - stackai
+    - backend
+    - api
+    - celery
+    - redis
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI Team
+    name: stackend
+    sources:
+    - https://github.com/stackai/stackai
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackend-2.1.0/stackend-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v2
+    appVersion: v1.0.1
     created: "2025-09-29T10:55:22.798859706Z"
     description: A Helm chart for StackAI Backend Services
     digest: ac2c4b9f061ddf4f0265128b71a1b607eb68bc896924a80ef552e5bd41ae371b
@@ -24,6 +46,27 @@ entries:
     - https://github.com/stackai/stackai-helm/releases/download/stackend-2.0.0/stackend-2.0.0.tgz
     version: 2.0.0
   stackrepl:
+  - apiVersion: v2
+    appVersion: v1.0.0
+    created: "2025-10-01T05:31:44.269187533Z"
+    description: A Helm chart for StackAI REPL Service
+    digest: 01e2a0d109d21a516fb5a6c0f52f041c35ff99981053fad2677c97bca1e594a4
+    home: https://stackai.com
+    keywords:
+    - stackai
+    - repl
+    - interactive
+    - development
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI Team
+    name: stackrepl
+    sources:
+    - https://github.com/stackai/stackai
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackrepl-2.1.0/stackrepl-2.1.0.tgz
+    version: 2.1.0
   - apiVersion: v2
     appVersion: v1.0.0
     created: "2025-09-29T10:55:22.942192045Z"
@@ -48,6 +91,27 @@ entries:
   stackweb:
   - apiVersion: v2
     appVersion: v1.0.1
+    created: "2025-10-01T05:31:44.461629679Z"
+    description: A Helm chart for StackAI Frontend Web Application
+    digest: 54dc48c7878e890edaf328f2e9fef3d982da5f1ced3e62b61b4249641b42d604
+    home: https://stackai.com
+    keywords:
+    - stackai
+    - frontend
+    - web
+    - nextjs
+    maintainers:
+    - email: support@stackai.com
+      name: StackAI Team
+    name: stackweb
+    sources:
+    - https://github.com/stackai/stackai
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/stackweb-2.1.0/stackweb-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v2
+    appVersion: v1.0.1
     created: "2025-09-29T10:55:23.094460345Z"
     description: A Helm chart for StackAI Frontend Web Application
     digest: 23af3d65fc554e6d036b48b0522e32d36b82036a81ac6d906abfeb2d27c35983
@@ -69,6 +133,16 @@ entries:
     version: 2.0.0
   supabase:
   - apiVersion: v2
+    created: "2025-10-01T05:31:44.646838934Z"
+    description: The open source Firebase alternative.
+    digest: 532149eebc8520f39ca24b4db3da60729fd9320ae07193a7490bc7868c739aaf
+    icon: https://avatars.githubusercontent.com/u/54469796?s=280&v=4
+    name: supabase
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/supabase-2.1.0/supabase-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v2
     created: "2025-09-29T10:55:23.258035732Z"
     description: The open source Firebase alternative.
     digest: 287d6b53f772a31022439ca24c29bbeb029f8913b7390cd2ec87f3d3e0fdfd67
@@ -79,6 +153,27 @@ entries:
     - https://github.com/stackai/stackai-helm/releases/download/supabase-2.0.0/supabase-2.0.0.tgz
     version: 2.0.0
   unstructured:
+  - apiVersion: v2
+    appVersion: 0.0.80
+    created: "2025-10-01T05:31:44.804507733Z"
+    description: A Helm chart for Unstructured API Service
+    digest: a22fdf9022e00c24495e0d2ce50b0340fd13479a91e902c6b4fc28b3b35f339a
+    home: https://unstructured.io
+    keywords:
+    - unstructured
+    - api
+    - document-processing
+    - ai
+    maintainers:
+    - email: support@unstructured.io
+      name: Unstructured Team
+    name: unstructured
+    sources:
+    - https://github.com/Unstructured-IO/unstructured
+    type: application
+    urls:
+    - https://github.com/stackai/stackai-helm/releases/download/unstructured-2.1.0/unstructured-2.1.0.tgz
+    version: 2.1.0
   - apiVersion: v2
     appVersion: 0.0.80
     created: "2025-09-29T10:55:23.393633887Z"
@@ -100,4 +195,4 @@ entries:
     urls:
     - https://github.com/stackai/stackai-helm/releases/download/unstructured-2.0.0/unstructured-2.0.0.tgz
     version: 2.0.0
-generated: "2025-09-29T10:55:23.393640228Z"
+generated: "2025-10-01T05:31:44.804546956Z"
