@@ -1,0 +1,86 @@
+{{- if .Values.minio.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "supabase.minio.fullname" . }}-init-buckets
+  labels:
+    {{- include "supabase.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "supabase.minio.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: minio-init
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        # Wait for MinIO to be ready
+        - name: wait-for-minio
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MinIO to be ready..."
+              until nc -z {{ include "supabase.minio.fullname" . }} {{ .Values.minio.service.port }}; do
+                echo "MinIO is not ready yet. Waiting..."
+                sleep 5
+              done
+              echo "MinIO is ready!"
+              sleep 10
+      containers:
+        - name: create-buckets
+          image: minio/mc:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Configuring MinIO client..."
+
+              # Set up mc alias
+              mc alias set supa-minio \
+                http://{{ include "supabase.minio.fullname" . }}:{{ .Values.minio.service.port }} \
+                "${MINIO_ROOT_USER}" \
+                "${MINIO_ROOT_PASSWORD}"
+
+              echo "Creating buckets..."
+
+              # Create stack-ai-usercontent bucket if it doesn't exist
+              if mc ls supa-minio/stack-ai-usercontent 2>/dev/null; then
+                echo "Bucket 'stack-ai-usercontent' already exists"
+              else
+                mc mb supa-minio/stack-ai-usercontent
+                echo "Created bucket 'stack-ai-usercontent'"
+              fi
+
+              # Create stub bucket if it doesn't exist
+              if mc ls supa-minio/stub 2>/dev/null; then
+                echo "Bucket 'stub' already exists"
+              else
+                mc mb supa-minio/stub
+                echo "Created bucket 'stub'"
+              fi
+
+              # Set public policy for stack-ai-usercontent (optional, adjust as needed)
+              # mc anonymous set public supa-minio/stack-ai-usercontent
+
+              echo "MinIO bucket initialization completed successfully!"
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "supabase.secret.s3" . }}
+                  key: keyId
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "supabase.secret.s3" . }}
+                  key: accessKey
+{{- end }}

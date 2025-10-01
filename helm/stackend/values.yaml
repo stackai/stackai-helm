@@ -41,7 +41,7 @@ podSecurityContext:
 securityContext:
   capabilities:
     drop:
-      - ALL
+    - ALL
   readOnlyRootFilesystem: false
   runAsNonRoot: true
   runAsUser: 1000
@@ -562,6 +562,7 @@ configMaps:
     [llms.providers.Bedrock.default]
     model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
+
   llmAzureConfig: |
     [llms.providers.Azure]
     plan_required = "enterprise"
@@ -875,6 +876,7 @@ configMaps:
     [llms.providers.OpenAI.default]
     model_id = "gpt-4.1-2025-04-14"
 
+
 # Persistent Volume Claims
 persistence:
   enabled: false
@@ -897,7 +899,7 @@ restarter:
   image:
     repository: docker
     tag: cli
-  schedule: "0 7 * * *" # Daily at 7 AM
+  schedule: "0 7 * * *"  # Daily at 7 AM
 
 # Health checks
 healthCheck:
@@ -925,3 +927,15 @@ readinessProbe:
   timeoutSeconds: 3
   failureThreshold: 3
   successThreshold: 1
+
+# Database migration configuration
+migration:
+  enabled: true
+  delaySeconds: 600
+  checkInterval: 30
+
+# Post-migration tasks configuration
+postMigration:
+  enabled: true
+  delaySeconds: 60
+  checkInterval: 10

@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-migration-script
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+data:
+  migration.sh: |
+    #!/bin/bash
+    set -e
+    # Change to migration directory
+    cd /app/src/infra/migrations/postgres
+
+    # Check current migration status
+    echo "Checking current migration status..."
+    CURRENT_REVISION=$(alembic current 2>/dev/null | grep -o '[a-f0-9]\{12\}' | tail -1 || echo "")
+    HEAD_REVISION=$(alembic heads 2>/dev/null | grep -o '[a-f0-9]\{12\}' | tail -1 || echo "")
+
+    echo "Current revision: ${CURRENT_REVISION:-'none'}"
+    echo "Head revision: ${HEAD_REVISION:-'none'}"
+
+    # Check if migrations are needed
+    if [ -z "$CURRENT_REVISION" ] || [ "$CURRENT_REVISION" != "$HEAD_REVISION" ]; then
+      echo "Migrations needed. Running alembic upgrade head..."
+      if alembic upgrade head; then
+        echo "Migration completed successfully!"
+        echo "Final revision: $(alembic current 2>/dev/null | grep -o '[a-f0-9]\{12\}' | tail -1 || echo 'unknown')"
+      else
+        echo "ERROR: Migration failed!"
+        exit 1
+      fi
+    else
+      echo "Database is already up to date. No migrations needed."
+    fi
+    echo "=== Migration Process Completed Successfully ==="

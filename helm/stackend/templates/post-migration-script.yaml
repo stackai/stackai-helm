@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackend.fullname" . }}-post-migration-script
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+data:
+  post-migration.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "=== Starting Post-Migration Tasks ==="
+
+    # Insert StackAI project templates
+    echo "Inserting StackAI project templates..."
+    if python scripts/on-premise/insert_stackai_project_templates.py; then
+      echo "Project templates inserted successfully!"
+    else
+      echo "ERROR: Failed to insert project templates!"
+      exit 1
+    fi
+
+    echo "=== Post-Migration Tasks Completed Successfully ==="

@@ -1,0 +1,100 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "stackend.fullname" . }}-migration
+  labels:
+    {{- include "stackend.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "stackend.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      restartPolicy: OnFailure
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "stackend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "=== Migration Job: Waiting for API to be ready ==="
+              echo "Initial delay: {{ .Values.migration.delaySeconds | default 240 }} seconds ({{ .Values.migration.delaySeconds | default 240 | div 60 }} minutes)"
+              sleep {{ .Values.migration.delaySeconds | default 240 }}
+
+              echo "Checking API health endpoint..."
+              # Wait for API health check with retries
+              MAX_RETRIES=20
+              RETRY_COUNT=0
+
+              until curl -f http://{{ include "stackend.fullname" . }}:8000 2>/dev/null; do
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+                  echo "ERROR: API health check failed after $MAX_RETRIES attempts"
+                  exit 1
+                fi
+                echo "API is not ready yet, waiting... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+                sleep {{ .Values.migration.checkInterval | default 30 }}
+              done
+              echo "API is ready, proceeding with migration..."
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+      containers:
+        - name: migration
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ['/bin/bash', '/scripts/migration.sh']
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            - name: LOAD_CONNECTIONS_ONLY
+              value: "false"
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: migration-script
+              mountPath: /scripts
+              readOnly: true
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "1000m"
+            limits:
+              memory: "8Gi"
+              cpu: "2000m"
+      volumes:
+        - name: migration-script
+          configMap:
+            name: {{ include "stackend.fullname" . }}-migration-script
+            defaultMode: 0755
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

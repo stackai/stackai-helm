@@ -31,6 +31,13 @@ data:
     ALTER USER supabase_auth_admin WITH PASSWORD :'pgpass';
     ALTER USER supabase_functions_admin WITH PASSWORD :'pgpass';
     ALTER USER supabase_storage_admin WITH PASSWORD :'pgpass';
+  99-extensions.sql: |
+    BEGIN;
+      -- Create pgsodium extension (required for encryption)
+      CREATE EXTENSION IF NOT EXISTS pgsodium;
+      -- Grant access to pgsodium schema
+      GRANT USAGE ON SCHEMA pgsodium TO postgres, anon, authenticated, service_role;
+    COMMIT;
   98-webhooks.sql: |
     BEGIN;
       -- Create pg_net extension

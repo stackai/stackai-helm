@@ -1,6 +1,6 @@
 # stackend
 
-![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.0.1](https://img.shields.io/badge/AppVersion-v1.0.1-informational?style=flat-square)
+![Version: 2.1.0](https://img.shields.io/badge/Version-2.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.0.1](https://img.shields.io/badge/AppVersion-v1.0.1-informational?style=flat-square)
 
 A Helm chart for StackAI Backend Services
 
@@ -63,6 +63,9 @@ A Helm chart for StackAI Backend Services
 | livenessProbe.periodSeconds | int | `10` |  |
 | livenessProbe.successThreshold | int | `1` |  |
 | livenessProbe.timeoutSeconds | int | `5` |  |
+| migration.checkInterval | int | `30` |  |
+| migration.delaySeconds | int | `600` |  |
+| migration.enabled | bool | `true` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
 | persistence.accessMode | string | `"ReadWriteOnce"` |  |
@@ -71,6 +74,9 @@ A Helm chart for StackAI Backend Services
 | persistence.storageClass | string | `""` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `2000` |  |
+| postMigration.checkInterval | int | `10` |  |
+| postMigration.delaySeconds | int | `60` |  |
+| postMigration.enabled | bool | `true` |  |
 | readinessProbe.enabled | bool | `true` |  |
 | readinessProbe.failureThreshold | int | `3` |  |
 | readinessProbe.initialDelaySeconds | int | `5` |  |

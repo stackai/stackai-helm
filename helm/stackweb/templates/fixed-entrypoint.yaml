@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stackweb.fullname" . }}-fixed-entrypoint
+  labels:
+    {{- include "stackweb.labels" . | nindent 4 }}
+data:
+  docker-entrypoint.sh: |
+    #!/bin/sh
+    set -e
+
+    echo "=== Building Next.js Application ==="
+
+    # Build the application
+    if [ -f yarn.lock ]; then
+      yarn run build
+    elif [ -f package-lock.json ]; then
+      npm run build
+    elif [ -f pnpm-lock.yaml ]; then
+      corepack enable pnpm && pnpm run build
+    else
+      echo "Lockfile not found." && exit 1
+    fi
+
+    echo "=== Copying ALL required files to standalone build ==="
+
+    # Copy static files to standalone build (required for Next.js standalone)
+    if [ -d "/app/.next/static" ] && [ -d "/app/.next/standalone" ]; then
+      echo "Copying .next/static files..."
+      cp -r /app/.next/static /app/.next/standalone/.next/
+      echo "Static files copied successfully"
+    else
+      echo "Warning: Static files or standalone directory not found"
+    fi
+
+    # Copy public directory (contains images, icons, etc.)
+    if [ -d "/app/public" ] && [ -d "/app/.next/standalone" ]; then
+      echo "Copying public directory..."
+      cp -r /app/public /app/.next/standalone/
+      echo "Public directory copied successfully"
+    else
+      echo "Warning: Public directory or standalone directory not found"
+    fi
+
+    # Copy ALL other .next directories that might be needed
+    if [ -d "/app/.next/standalone" ]; then
+      echo "Copying additional .next build artifacts..."
+
+      # Copy specific .next subdirectories that are needed (but not server since it's already in standalone)
+      for dir in /app/.next/*; do
+        if [ -d "$dir" ] && [ "$(basename "$dir")" != "static" ] && [ "$(basename "$dir")" != "standalone" ] && [ "$(basename "$dir")" != "cache" ] && [ "$(basename "$dir")" != "server" ]; then
+          echo "Copying $(basename "$dir")..."
+          cp -r "$dir" /app/.next/standalone/.next/
+        fi
+      done
+
+      # Copy any standalone-specific files from .next root
+      echo "Copying standalone build files..."
+      cp -f /app/.next/*.json /app/.next/standalone/.next/ 2>/dev/null || true
+      cp -f /app/.next/BUILD_ID /app/.next/standalone/.next/ 2>/dev/null || true
+
+      # Ensure we have all necessary Next.js files
+      echo "Ensuring all Next.js runtime files are present..."
+      cd /app/.next/standalone
+
+      # Create any missing directories
+      mkdir -p .next/server/pages 2>/dev/null || true
+      mkdir -p .next/server/app 2>/dev/null || true
+
+      # Ensure proper permissions on everything
+      chmod -R 755 .next 2>/dev/null || true
+      chmod -R 755 public 2>/dev/null || true
+      chmod +x server.js 2>/dev/null || true
+
+      echo "All files copied and permissions set"
+    fi
+
+    echo "=== Verifying standalone build ==="
+
+    # Verify that server.js exists in the correct location
+    if [ -f "/app/.next/standalone/server.js" ]; then
+      echo "✓ server.js found at correct location"
+    else
+      echo "✗ ERROR: server.js not found at /app/.next/standalone/server.js"
+      echo "Available files in /app/.next/standalone/:"
+      ls -la /app/.next/standalone/ 2>/dev/null || echo "Directory not found"
+      exit 1
+    fi
+
+    # Change to the standalone directory
+    cd /app/.next/standalone
+
+    echo "=== Starting Next.js Application ==="
+
+    # Start the application
+    exec node server.js

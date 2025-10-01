@@ -2,7 +2,7 @@ apiVersion: v2
 name: unstructured
 description: A Helm chart for Unstructured API Service
 type: application
-version: 2.0.0
+version: 2.1.0
 appVersion: "0.0.80"
 keywords:
   - unstructured
